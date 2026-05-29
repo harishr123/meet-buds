@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1015827045951",
+    "project_id": "meetingbuds",
+    "storage_bucket": "meetingbuds.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1015827045951:android:dc502d09c8d0baa8c9228a",
+        "android_client_info": {
+          "package_name": "com.example.meet_buddies"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDLSyALuviKUAyYtCzeV9giZKT3kCnRyIA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1015827045951:android:2d1bacb95661f67bc9228a",
+        "android_client_info": {
+          "package_name": "com.example.meet_buddies2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDLSyALuviKUAyYtCzeV9giZKT3kCnRyIA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
