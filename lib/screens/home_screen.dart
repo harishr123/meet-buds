@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../feed_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -8,7 +9,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Home'),
+        title: const Text('Meet Buddies'),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -18,7 +19,7 @@ class HomeScreen extends StatelessWidget {
           )
         ],
       ),
-      body: const Center(child: Text('Welcome! You are logged in.')),
+      body: const FeedScreen(),
     );
   }
 }
