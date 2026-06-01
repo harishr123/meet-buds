@@ -1,5 +1,7 @@
 MeetingBuddies READme
+
     Features
+
         Sign Up / Login: Users can create an account and log in securely using their email and password via Firebase Auth.  
 
         Post Feed: A live timeline that updates automatically whenever someone adds a new post or likes an existing post.
@@ -28,8 +30,9 @@ MeetingBuddies READme
         
         post_service.dart: Handles the backend code for posts.  
 
-How to Get it Running
-Make sure you have Flutter installed on your computer.
-Clone this project folder.
-Connect your phone or open an emulator and run flutter run.  
+    How to Get it Running
+    
+        Make sure you have Flutter installed on your computer.
+        Clone this project folder.
+        Connect your phone or open an emulator and run flutter run.  
 
