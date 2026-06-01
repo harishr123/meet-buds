@@ -3,6 +3,8 @@ import 'post_service.dart';
 import 'post_card.dart';
 import 'create_post_screen.dart';
 
+// main feed screen showing list of posts from users
+
 class FeedScreen extends StatelessWidget {
   const FeedScreen({super.key});
 

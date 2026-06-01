@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'post_model.dart';
 import 'post_service.dart';
 
+// ui for each post in the feed
 class PostCard extends StatelessWidget {
   final PostModel post;
   final PostService postService;

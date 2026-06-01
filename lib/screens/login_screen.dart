@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import 'signup_screen.dart';
 import 'home_screen.dart';
+// first screen user sees to login or sign up
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

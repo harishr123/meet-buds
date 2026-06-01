@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'post_service.dart';
 
+// screen to create a new post with text and location
+
 class CreatePostScreen extends StatefulWidget {
   const CreatePostScreen({super.key});
 
