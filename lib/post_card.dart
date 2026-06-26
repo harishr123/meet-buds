@@ -96,7 +96,7 @@ class PostCard extends StatelessWidget {
                         child: ListView.separated(
                           scrollDirection: Axis.horizontal,
                           itemCount: post.imageUrls.length,
-                          separatorBuilder: (_, __) =>
+                          separatorBuilder: (_, _) =>
                               const SizedBox(width: 6),
                           itemBuilder: (_, i) => ClipRRect(
                             borderRadius: BorderRadius.circular(8),
