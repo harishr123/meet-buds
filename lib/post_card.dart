@@ -24,13 +24,88 @@ class _PostCardState extends State<PostCard> {
       return;
     }
     setState(() => _loadingJoined = true);
-    final names = await widget.postService
-        .getJoinedUsernames(widget.post.joinedBy);
+    final names = await widget.postService.getJoinedUsernames(widget.post.joinedBy);
     setState(() {
       _joinedUsernames = names;
       _showJoined = true;
       _loadingJoined = false;
     });
+  }
+
+  // Activity color config
+  Map<String, dynamic> _activityConfig(String type) {
+    switch (type) {
+      case 'gym':
+        return {
+          'gradient': [const Color(0xFFE1F5EE), const Color(0xFF9FE1CB)],
+          'text': const Color(0xFF085041),
+          'badge': const Color(0xFF0F6E56),
+          'emoji': '🏋️',
+          'label': 'Gym',
+        };
+      case 'food':
+        return {
+          'gradient': [const Color(0xFFFAECE7), const Color(0xFFF5C4B3)],
+          'text': const Color(0xFF993C1D),
+          'badge': const Color(0xFFD85A30),
+          'emoji': '🍜',
+          'label': 'Food',
+        };
+      case 'study':
+        return {
+          'gradient': [const Color(0xFFE6F1FB), const Color(0xFFB5D4F4)],
+          'text': const Color(0xFF0C447C),
+          'badge': const Color(0xFF185FA5),
+          'emoji': '📚',
+          'label': 'Study',
+        };
+      case 'sports':
+        return {
+          'gradient': [const Color(0xFFEAF3DE), const Color(0xFFC0DD97)],
+          'text': const Color(0xFF3B6D11),
+          'badge': const Color(0xFF639922),
+          'emoji': '⚽',
+          'label': 'Sports',
+        };
+      case 'hangout':
+        return {
+          'gradient': [const Color(0xFFFAEEDA), const Color(0xFFFAC775)],
+          'text': const Color(0xFF854F0B),
+          'badge': const Color(0xFFBA7517),
+          'emoji': '☕',
+          'label': 'Hangout',
+        };
+      default:
+        return {
+          'gradient': [const Color(0xFFEEEDFE), const Color(0xFFCECBF6)],
+          'text': const Color(0xFF3C3489),
+          'badge': const Color(0xFF534AB7),
+          'emoji': '📌',
+          'label': 'General',
+        };
+    }
+  }
+
+  Color _avatarColor(String username) {
+    final colors = [
+      const Color(0xFFEEEDFE),
+      const Color(0xFFE1F5EE),
+      const Color(0xFFFAECE7),
+      const Color(0xFFE6F1FB),
+      const Color(0xFFFBEAF0),
+    ];
+    return colors[username.codeUnitAt(0) % colors.length];
+  }
+
+  Color _avatarTextColor(String username) {
+    final colors = [
+      const Color(0xFF3C3489),
+      const Color(0xFF085041),
+      const Color(0xFF993C1D),
+      const Color(0xFF0C447C),
+      const Color(0xFF72243E),
+    ];
+    return colors[username.codeUnitAt(0) % colors.length];
   }
 
   @override
@@ -39,55 +114,108 @@ class _PostCardState extends State<PostCard> {
     final isLiked = widget.post.likes.contains(uid);
     final isJoined = widget.post.joinedBy.contains(uid);
     final isOwner = widget.post.userId == uid;
+    final username = widget.post.username;
+    final config = _activityConfig(widget.post.activityType);
+    final gradientColors = config['gradient'] as List<Color>;
+    final headerText = config['text'] as Color;
+    final badgeColor = config['badge'] as Color;
+    final joinedCount = widget.post.joinedBy.length;
+    final maxP = widget.post.maxParticipants;
+    final isFull = maxP > 0 && joinedCount >= maxP;
+    final spotsLeft = maxP > 0 ? maxP - joinedCount : null;
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Row(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 0,
+      color: Colors.white,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Gradient header
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: gradientColors,
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            child: Row(
               children: [
-                CircleAvatar(
-                  radius: 20,
-                  backgroundImage: widget.post.userAvatar != null
-                      ? NetworkImage(widget.post.userAvatar!)
-                      : null,
-                  child: widget.post.userAvatar == null
-                      ? Text(widget.post.username[0].toUpperCase())
-                      : null,
+                // Avatar
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.7),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Text(
+                      username[0].toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: headerText,
+                      ),
+                    ),
+                  ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(widget.post.username,
-                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                      Text(username,
+                          style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: headerText)),
                       if (widget.post.location != null)
                         Row(
                           children: [
-                            const Icon(Icons.location_on,
-                                size: 12, color: Colors.grey),
+                            Icon(Icons.location_on, size: 11, color: headerText.withOpacity(0.7)),
                             const SizedBox(width: 2),
                             Text(widget.post.location!,
-                                style: const TextStyle(
-                                    fontSize: 12, color: Colors.grey)),
+                                style: TextStyle(
+                                    fontSize: 11,
+                                    color: headerText.withOpacity(0.7))),
                           ],
                         ),
                     ],
                   ),
                 ),
-                Text(
-                  _timeAgo(widget.post.timestamp),
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                // Activity badge
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.6),
+                    borderRadius: BorderRadius.circular(99),
+                  ),
+                  child: Row(
+                    children: [
+                      Text(config['emoji'] as String,
+                          style: const TextStyle(fontSize: 12)),
+                      const SizedBox(width: 4),
+                      Text(config['label'] as String,
+                          style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: badgeColor)),
+                    ],
+                  ),
                 ),
+                const SizedBox(width: 4),
+                // Timestamp + menu
+                Text(_timeAgo(widget.post.timestamp),
+                    style: TextStyle(
+                        fontSize: 11, color: headerText.withOpacity(0.7))),
                 if (isOwner)
                   PopupMenuButton<String>(
+                    icon: Icon(Icons.more_horiz, size: 18, color: headerText),
                     onSelected: (val) {
                       if (val == 'delete') {
                         widget.postService.deletePost(widget.post.id);
@@ -100,131 +228,200 @@ class _PostCardState extends State<PostCard> {
                   ),
               ],
             ),
-            const SizedBox(height: 10),
+          ),
 
-            // Text
-            if (widget.post.text.isNotEmpty) ...[
-              Text(widget.post.text, style: const TextStyle(fontSize: 15)),
-              const SizedBox(height: 10),
-            ],
+          // Body
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Post text
+                if (widget.post.text.isNotEmpty)
+                  Text(widget.post.text,
+                      style: const TextStyle(fontSize: 15, height: 1.45)),
 
-            // Images
-            if (widget.post.imageUrls.isNotEmpty)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: widget.post.imageUrls.length == 1
-                    ? Image.network(widget.post.imageUrls[0],
-                        width: double.infinity,
-                        height: 220,
-                        fit: BoxFit.cover)
-                    : SizedBox(
-                        height: 220,
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: widget.post.imageUrls.length,
-                          separatorBuilder: (_, _) =>
-                              const SizedBox(width: 6),
-                          itemBuilder: (_, i) => ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Image.network(widget.post.imageUrls[i],
-                                width: 260,
-                                height: 220,
-                                fit: BoxFit.cover),
+                // Images
+                if (widget.post.imageUrls.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: widget.post.imageUrls.length == 1
+                        ? Image.network(widget.post.imageUrls[0],
+                            width: double.infinity,
+                            height: 200,
+                            fit: BoxFit.cover)
+                        : SizedBox(
+                            height: 200,
+                            child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: widget.post.imageUrls.length,
+                              separatorBuilder: (_, __) =>
+                                  const SizedBox(width: 6),
+                              itemBuilder: (_, i) => ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(widget.post.imageUrls[i],
+                                    width: 240,
+                                    height: 200,
+                                    fit: BoxFit.cover),
+                              ),
+                            ),
                           ),
+                  ),
+                ],
+
+                const SizedBox(height: 12),
+
+                // Spots remaining
+                if (maxP > 0) ...[
+                  Row(
+                    children: [
+                      Icon(
+                        isFull ? Icons.block : Icons.people_outline,
+                        size: 13,
+                        color: isFull ? Colors.red.shade400 : Colors.grey.shade500,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        isFull
+                            ? 'Activity full'
+                            : '$spotsLeft spot${spotsLeft == 1 ? '' : 's'} left',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isFull ? Colors.red.shade400 : Colors.grey.shade500,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-              ),
-
-            const SizedBox(height: 10),
-
-            // Like + Join buttons
-            Row(
-              children: [
-                // Like
-                GestureDetector(
-                  onTap: () => widget.postService.toggleLike(widget.post.id),
-                  child: Row(
-                    children: [
-                      Icon(
-                        isLiked ? Icons.favorite : Icons.favorite_border,
-                        color: isLiked ? Colors.red : Colors.grey,
-                        size: 22,
-                      ),
-                      const SizedBox(width: 4),
-                      Text('${widget.post.likes.length}',
-                          style: const TextStyle(color: Colors.grey)),
                     ],
                   ),
-                ),
-                const SizedBox(width: 20),
+                  const SizedBox(height: 8),
+                ],
 
-                // Join button
-                GestureDetector(
-                  onTap: isOwner ? null : () => widget.postService.toggleJoin(widget.post.id),
-                  child: Row(
-                    children: [
-                      Icon(
-                        isJoined ? Icons.group : Icons.group_outlined,
-                        color: isOwner ? Colors.grey : (isJoined ? Colors.green : Colors.grey),
-                        size: 22,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(isJoined ? 'Joined' : 'Join',
-                          style: TextStyle(
-                              color: isOwner ? Colors.grey : (isJoined ? Colors.green : Colors.grey))),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-
-                // Joined count — tappable to expand list
-                if (widget.post.joinedBy.isNotEmpty)
-                  GestureDetector(
-                    onTap: _toggleShowJoined,
-                    child: _loadingJoined
-                        ? const SizedBox(
-                            width: 14,
-                            height: 14,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Text(
-                            '${widget.post.joinedBy.length} joining ▾',
-                            style: const TextStyle(
-                                fontSize: 12, color: Colors.grey),
+                // Action buttons
+                Row(
+                  children: [
+                    // Like
+                    GestureDetector(
+                      onTap: () => widget.postService.toggleLike(widget.post.id),
+                      child: Row(
+                        children: [
+                          Icon(
+                            isLiked ? Icons.favorite : Icons.favorite_border,
+                            size: 19,
+                            color: isLiked
+                                ? const Color(0xFFD4537E)
+                                : Colors.grey.shade400,
                           ),
+                          const SizedBox(width: 5),
+                          Text('${widget.post.likes.length}',
+                              style: TextStyle(
+                                  fontSize: 13, color: Colors.grey.shade500)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 24),
+
+                    // Join
+                    GestureDetector(
+                      onTap: (isOwner || isFull)
+                          ? null
+                          : () => widget.postService.toggleJoin(widget.post.id),
+                      child: Row(
+                        children: [
+                          Icon(
+                            isJoined ? Icons.group : Icons.group_outlined,
+                            size: 19,
+                            color: isOwner
+                                ? Colors.grey.shade300
+                                : isFull && !isJoined
+                                    ? Colors.grey.shade300
+                                    : isJoined
+                                        ? const Color(0xFF1D9E75)
+                                        : Colors.grey.shade400,
+                          ),
+                          const SizedBox(width: 5),
+                          Text(
+                            isOwner
+                                ? 'Your post'
+                                : isFull && !isJoined
+                                    ? 'Full'
+                                    : isJoined
+                                        ? 'Joined'
+                                        : 'Join',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: isJoined
+                                  ? FontWeight.w500
+                                  : FontWeight.normal,
+                              color: isOwner
+                                  ? Colors.grey.shade300
+                                  : isFull && !isJoined
+                                      ? Colors.grey.shade300
+                                      : isJoined
+                                          ? const Color(0xFF1D9E75)
+                                          : Colors.grey.shade400,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+
+                    // Joined count
+                    if (joinedCount > 0)
+                      GestureDetector(
+                        onTap: _toggleShowJoined,
+                        child: _loadingJoined
+                            ? SizedBox(
+                                width: 12,
+                                height: 12,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 1.5,
+                                    color: Colors.grey.shade400),
+                              )
+                            : Text(
+                                '$joinedCount joining ${_showJoined ? '▴' : '▾'}',
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey.shade500)),
+                      ),
+                  ],
+                ),
+
+                // Joined users list
+                if (_showJoined && _joinedUsernames.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: _joinedUsernames
+                        .map((name) => Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: gradientColors[0],
+                                borderRadius: BorderRadius.circular(99),
+                              ),
+                              child: Text(name,
+                                  style: TextStyle(
+                                      fontSize: 12, color: headerText)),
+                            ))
+                        .toList(),
                   ),
+                ],
               ],
             ),
-
-            // Joined users list (expanded)
-            if (_showJoined && _joinedUsernames.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              const Divider(height: 1),
-              const SizedBox(height: 6),
-              Wrap(
-                spacing: 6,
-                runSpacing: 4,
-                children: _joinedUsernames
-                    .map((name) => Chip(
-                          label: Text(name,
-                              style: const TextStyle(fontSize: 12)),
-                          padding: EdgeInsets.zero,
-                          visualDensity: VisualDensity.compact,
-                        ))
-                    .toList(),
-              ),
-            ],
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   String _timeAgo(DateTime dt) {
     final diff = DateTime.now().difference(dt);
-    if (diff.inSeconds < 60) return '${diff.inSeconds}s ago';
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-    if (diff.inHours < 24) return '${diff.inHours}h ago';
-    return '${diff.inDays}d ago';
+    if (diff.inSeconds < 60) return '${diff.inSeconds}s';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m';
+    if (diff.inHours < 24) return '${diff.inHours}h';
+    return '${diff.inDays}d';
   }
 }

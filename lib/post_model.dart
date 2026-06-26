@@ -10,7 +10,9 @@ class PostModel {
   final String? location;
   final DateTime timestamp;
   final List<String> likes;
-  final List<String> joinedBy; //NEW
+  final List<String> joinedBy;
+  final String activityType;
+  final int maxParticipants;
 
   PostModel({
     required this.id,
@@ -22,7 +24,9 @@ class PostModel {
     this.location,
     required this.timestamp,
     required this.likes,
-    required this.joinedBy, //NEW
+    required this.joinedBy,
+    required this.activityType,
+    required this.maxParticipants,
   });
 
   factory PostModel.fromFirestore(DocumentSnapshot doc) {
@@ -37,7 +41,9 @@ class PostModel {
       location: data['location'],
       timestamp: (data['timestamp'] as Timestamp).toDate(),
       likes: List<String>.from(data['likes'] ?? []),
-      joinedBy: List<String>.from(data['joinedBy'] ?? []), //NEW
+      joinedBy: List<String>.from(data['joinedBy'] ?? []),
+      activityType: data['activityType'] ?? 'general',
+      maxParticipants: data['maxParticipants'] ?? 0,
     );
   }
 
@@ -51,7 +57,9 @@ class PostModel {
       'location': location,
       'timestamp': Timestamp.fromDate(timestamp),
       'likes': likes,
-      'joinedBy': joinedBy, //NEW
+      'joinedBy': joinedBy,
+      'activityType': activityType,
+      'maxParticipants': maxParticipants,
     };
   }
 }

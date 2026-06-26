@@ -27,18 +27,18 @@ class PostService {
     required String text,
     required List<File> images,
     String? location,
+    String activityType = 'general',
+    int maxParticipants = 0,
   }) async {
     final user = _auth.currentUser!;
     final postRef = _db.collection('posts').doc();
 
-    // Upload images
     final imageUrls = <String>[];
     for (int i = 0; i < images.length; i++) {
       final url = await _uploadImage(images[i], postRef.id, i);
       imageUrls.add(url);
     }
 
-    // Get username from Firestore users collection
     final userDoc = await _db.collection('users').doc(user.uid).get();
     final username = userDoc.data()?['username'] ?? user.email ?? 'Anonymous';
     final avatar = userDoc.data()?['avatarUrl'];
@@ -53,7 +53,9 @@ class PostService {
       location: location,
       timestamp: DateTime.now(),
       likes: [],
-      joinedBy: [], //NEW
+      joinedBy: [],
+      activityType: activityType,
+      maxParticipants: maxParticipants,
     ).toMap());
   }
 
@@ -62,7 +64,6 @@ class PostService {
     final ref = _db.collection('posts').doc(postId);
     final doc = await ref.get();
     final likes = List<String>.from(doc['likes'] ?? []);
-
     if (likes.contains(uid)) {
       likes.remove(uid);
     } else {
@@ -77,7 +78,6 @@ class PostService {
     final doc = await ref.get();
     final data = doc.data() as Map<String, dynamic>?;
     final joinedBy = List<String>.from(data?['joinedBy'] ?? []);
-
     if (joinedBy.contains(uid)) {
       joinedBy.remove(uid);
     } else {
