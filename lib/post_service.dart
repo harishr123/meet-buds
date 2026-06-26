@@ -53,6 +53,7 @@ class PostService {
       location: location,
       timestamp: DateTime.now(),
       likes: [],
+      joinedBy: [], //NEW
     ).toMap());
   }
 
@@ -68,6 +69,31 @@ class PostService {
       likes.add(uid);
     }
     await ref.update({'likes': likes});
+  }
+
+  Future<void> toggleJoin(String postId) async {
+    final uid = _auth.currentUser!.uid;
+    final ref = _db.collection('posts').doc(postId);
+    final doc = await ref.get();
+    final data = doc.data() as Map<String, dynamic>?;
+    final joinedBy = List<String>.from(data?['joinedBy'] ?? []);
+
+    if (joinedBy.contains(uid)) {
+      joinedBy.remove(uid);
+    } else {
+      joinedBy.add(uid);
+    }
+    await ref.update({'joinedBy': joinedBy});
+  }
+
+  Future<List<String>> getJoinedUsernames(List<String> userIds) async {
+    if (userIds.isEmpty) return [];
+    final results = await Future.wait(
+      userIds.map((uid) => _db.collection('users').doc(uid).get()),
+    );
+    return results.map<String>((doc) {
+      return doc.data()?['username'] ?? 'Anonymous';
+    }).toList();
   }
 
   Future<void> deletePost(String postId) async {

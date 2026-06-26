@@ -3,18 +3,42 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'post_model.dart';
 import 'post_service.dart';
 
-// ui for each post in the feed
-class PostCard extends StatelessWidget {
+class PostCard extends StatefulWidget {
   final PostModel post;
   final PostService postService;
 
   const PostCard({super.key, required this.post, required this.postService});
 
   @override
+  State<PostCard> createState() => _PostCardState();
+}
+
+class _PostCardState extends State<PostCard> {
+  bool _showJoined = false;
+  List<String> _joinedUsernames = [];
+  bool _loadingJoined = false;
+
+  Future<void> _toggleShowJoined() async {
+    if (_showJoined) {
+      setState(() => _showJoined = false);
+      return;
+    }
+    setState(() => _loadingJoined = true);
+    final names = await widget.postService
+        .getJoinedUsernames(widget.post.joinedBy);
+    setState(() {
+      _joinedUsernames = names;
+      _showJoined = true;
+      _loadingJoined = false;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final uid = FirebaseAuth.instance.currentUser?.uid;
-    final isLiked = post.likes.contains(uid);
-    final isOwner = post.userId == uid;
+    final isLiked = widget.post.likes.contains(uid);
+    final isJoined = widget.post.joinedBy.contains(uid);
+    final isOwner = widget.post.userId == uid;
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -30,11 +54,11 @@ class PostCard extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 20,
-                  backgroundImage: post.userAvatar != null
-                      ? NetworkImage(post.userAvatar!)
+                  backgroundImage: widget.post.userAvatar != null
+                      ? NetworkImage(widget.post.userAvatar!)
                       : null,
-                  child: post.userAvatar == null
-                      ? Text(post.username[0].toUpperCase())
+                  child: widget.post.userAvatar == null
+                      ? Text(widget.post.username[0].toUpperCase())
                       : null,
                 ),
                 const SizedBox(width: 10),
@@ -42,15 +66,15 @@ class PostCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(post.username,
+                      Text(widget.post.username,
                           style: const TextStyle(fontWeight: FontWeight.bold)),
-                      if (post.location != null)
+                      if (widget.post.location != null)
                         Row(
                           children: [
                             const Icon(Icons.location_on,
                                 size: 12, color: Colors.grey),
                             const SizedBox(width: 2),
-                            Text(post.location!,
+                            Text(widget.post.location!,
                                 style: const TextStyle(
                                     fontSize: 12, color: Colors.grey)),
                           ],
@@ -59,13 +83,15 @@ class PostCard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  _timeAgo(post.timestamp),
+                  _timeAgo(widget.post.timestamp),
                   style: const TextStyle(fontSize: 12, color: Colors.grey),
                 ),
                 if (isOwner)
                   PopupMenuButton<String>(
                     onSelected: (val) {
-                      if (val == 'delete') postService.deletePost(post.id);
+                      if (val == 'delete') {
+                        widget.postService.deletePost(widget.post.id);
+                      }
                     },
                     itemBuilder: (_) => [
                       const PopupMenuItem(
@@ -77,17 +103,17 @@ class PostCard extends StatelessWidget {
             const SizedBox(height: 10),
 
             // Text
-            if (post.text.isNotEmpty) ...[
-              Text(post.text, style: const TextStyle(fontSize: 15)),
+            if (widget.post.text.isNotEmpty) ...[
+              Text(widget.post.text, style: const TextStyle(fontSize: 15)),
               const SizedBox(height: 10),
             ],
 
             // Images
-            if (post.imageUrls.isNotEmpty)
+            if (widget.post.imageUrls.isNotEmpty)
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: post.imageUrls.length == 1
-                    ? Image.network(post.imageUrls[0],
+                child: widget.post.imageUrls.length == 1
+                    ? Image.network(widget.post.imageUrls[0],
                         width: double.infinity,
                         height: 220,
                         fit: BoxFit.cover)
@@ -95,12 +121,12 @@ class PostCard extends StatelessWidget {
                         height: 220,
                         child: ListView.separated(
                           scrollDirection: Axis.horizontal,
-                          itemCount: post.imageUrls.length,
+                          itemCount: widget.post.imageUrls.length,
                           separatorBuilder: (_, _) =>
                               const SizedBox(width: 6),
                           itemBuilder: (_, i) => ClipRRect(
                             borderRadius: BorderRadius.circular(8),
-                            child: Image.network(post.imageUrls[i],
+                            child: Image.network(widget.post.imageUrls[i],
                                 width: 260,
                                 height: 220,
                                 fit: BoxFit.cover),
@@ -111,11 +137,12 @@ class PostCard extends StatelessWidget {
 
             const SizedBox(height: 10),
 
-            // Like button
+            // Like + Join buttons
             Row(
               children: [
+                // Like
                 GestureDetector(
-                  onTap: () => postService.toggleLike(post.id),
+                  onTap: () => widget.postService.toggleLike(widget.post.id),
                   child: Row(
                     children: [
                       Icon(
@@ -124,13 +151,69 @@ class PostCard extends StatelessWidget {
                         size: 22,
                       ),
                       const SizedBox(width: 4),
-                      Text('${post.likes.length}',
+                      Text('${widget.post.likes.length}',
                           style: const TextStyle(color: Colors.grey)),
                     ],
                   ),
                 ),
+                const SizedBox(width: 20),
+
+                // Join button
+                GestureDetector(
+                  onTap: isOwner ? null : () => widget.postService.toggleJoin(widget.post.id),
+                  child: Row(
+                    children: [
+                      Icon(
+                        isJoined ? Icons.group : Icons.group_outlined,
+                        color: isOwner ? Colors.grey : (isJoined ? Colors.green : Colors.grey),
+                        size: 22,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(isJoined ? 'Joined' : 'Join',
+                          style: TextStyle(
+                              color: isOwner ? Colors.grey : (isJoined ? Colors.green : Colors.grey))),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+
+                // Joined count — tappable to expand list
+                if (widget.post.joinedBy.isNotEmpty)
+                  GestureDetector(
+                    onTap: _toggleShowJoined,
+                    child: _loadingJoined
+                        ? const SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Text(
+                            '${widget.post.joinedBy.length} joining ▾',
+                            style: const TextStyle(
+                                fontSize: 12, color: Colors.grey),
+                          ),
+                  ),
               ],
             ),
+
+            // Joined users list (expanded)
+            if (_showJoined && _joinedUsernames.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              const Divider(height: 1),
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 6,
+                runSpacing: 4,
+                children: _joinedUsernames
+                    .map((name) => Chip(
+                          label: Text(name,
+                              style: const TextStyle(fontSize: 12)),
+                          padding: EdgeInsets.zero,
+                          visualDensity: VisualDensity.compact,
+                        ))
+                    .toList(),
+              ),
+            ],
           ],
         ),
       ),

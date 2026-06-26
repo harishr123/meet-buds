@@ -10,6 +10,7 @@ class PostModel {
   final String? location;
   final DateTime timestamp;
   final List<String> likes;
+  final List<String> joinedBy; //NEW
 
   PostModel({
     required this.id,
@@ -21,6 +22,7 @@ class PostModel {
     this.location,
     required this.timestamp,
     required this.likes,
+    required this.joinedBy, //NEW
   });
 
   factory PostModel.fromFirestore(DocumentSnapshot doc) {
@@ -35,6 +37,7 @@ class PostModel {
       location: data['location'],
       timestamp: (data['timestamp'] as Timestamp).toDate(),
       likes: List<String>.from(data['likes'] ?? []),
+      joinedBy: List<String>.from(data['joinedBy'] ?? []), //NEW
     );
   }
 
@@ -48,6 +51,7 @@ class PostModel {
       'location': location,
       'timestamp': Timestamp.fromDate(timestamp),
       'likes': likes,
+      'joinedBy': joinedBy, //NEW
     };
   }
 }
