@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+enum ActivityStatus { upcoming, ongoing, completed }
+
 class PostModel {
   final String id;
   final String userId;
@@ -13,6 +15,8 @@ class PostModel {
   final List<String> joinedBy;
   final String activityType;
   final int maxParticipants;
+  final DateTime? startTime;
+  final DateTime? endTime;
 
   PostModel({
     required this.id,
@@ -27,7 +31,17 @@ class PostModel {
     required this.joinedBy,
     required this.activityType,
     required this.maxParticipants,
+    this.startTime,
+    this.endTime,
   });
+
+  ActivityStatus get status {
+    final now = DateTime.now();
+    if (startTime == null || endTime == null) return ActivityStatus.upcoming;
+    if (now.isBefore(startTime!)) return ActivityStatus.upcoming;
+    if (now.isAfter(endTime!)) return ActivityStatus.completed;
+    return ActivityStatus.ongoing;
+  }
 
   factory PostModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
@@ -44,6 +58,12 @@ class PostModel {
       joinedBy: List<String>.from(data['joinedBy'] ?? []),
       activityType: data['activityType'] ?? 'general',
       maxParticipants: data['maxParticipants'] ?? 0,
+      startTime: data['startTime'] != null
+          ? (data['startTime'] as Timestamp).toDate()
+          : null,
+      endTime: data['endTime'] != null
+          ? (data['endTime'] as Timestamp).toDate()
+          : null,
     );
   }
 
@@ -60,6 +80,8 @@ class PostModel {
       'joinedBy': joinedBy,
       'activityType': activityType,
       'maxParticipants': maxParticipants,
+      'startTime': startTime != null ? Timestamp.fromDate(startTime!) : null,
+      'endTime': endTime != null ? Timestamp.fromDate(endTime!) : null,
     };
   }
 }

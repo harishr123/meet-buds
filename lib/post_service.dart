@@ -29,20 +29,19 @@ class PostService {
     String? location,
     String activityType = 'general',
     int maxParticipants = 0,
+    DateTime? startTime,
+    DateTime? endTime,
   }) async {
     final user = _auth.currentUser!;
     final postRef = _db.collection('posts').doc();
-
     final imageUrls = <String>[];
     for (int i = 0; i < images.length; i++) {
       final url = await _uploadImage(images[i], postRef.id, i);
       imageUrls.add(url);
     }
-
     final userDoc = await _db.collection('users').doc(user.uid).get();
     final username = userDoc.data()?['username'] ?? user.email ?? 'Anonymous';
     final avatar = userDoc.data()?['avatarUrl'];
-
     await postRef.set(PostModel(
       id: postRef.id,
       userId: user.uid,
@@ -56,7 +55,24 @@ class PostService {
       joinedBy: [],
       activityType: activityType,
       maxParticipants: maxParticipants,
+      startTime: startTime,
+      endTime: endTime,
     ).toMap());
+  }
+
+  Future<void> updatePost({
+    required String postId,
+    required String newText,
+    String? newLocation,
+    DateTime? newStartTime,
+    DateTime? newEndTime,
+  }) async {
+    await _db.collection('posts').doc(postId).update({
+      'text': newText,
+      'location': newLocation,
+      'startTime': newStartTime != null ? Timestamp.fromDate(newStartTime) : null,
+      'endTime': newEndTime != null ? Timestamp.fromDate(newEndTime) : null,
+    });
   }
 
   Future<void> toggleLike(String postId) async {

@@ -14,7 +14,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   final _postService = PostService();
   bool _loading = false;
   String _selectedActivity = 'general';
-  int _maxParticipants = 0; // 0 = no limit
+  int _maxParticipants = 0;
+  DateTime? _startTime;
+  DateTime? _endTime;
 
   static const _activities = [
     {'type': 'gym', 'label': 'Gym', 'emoji': '🏋️'},
@@ -24,6 +26,35 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     {'type': 'hangout', 'label': 'Hangout', 'emoji': '☕'},
     {'type': 'general', 'label': 'Other', 'emoji': '📌'},
   ];
+
+  Future<void> _pickTime({required bool isStart}) async {
+    final now = DateTime.now();
+    final date = await showDatePicker(
+      context: context,
+      initialDate: now,
+      firstDate: now,
+      lastDate: now.add(const Duration(days: 365)),
+    );
+    if (date == null) return;
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+    if (time == null) return;
+    final picked = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+    setState(() {
+      if (isStart) {
+        _startTime = picked;
+      } else {
+        _endTime = picked;
+      }
+    });
+  }
+
+  String _formatTime(DateTime? dt) {
+    if (dt == null) return 'Set time';
+    return '${dt.day}/${dt.month} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+  }
 
   Future<void> _submit() async {
     if (_textController.text.trim().isEmpty) return;
@@ -37,6 +68,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             : _locationController.text.trim(),
         activityType: _selectedActivity,
         maxParticipants: _maxParticipants,
+        startTime: _startTime,
+        endTime: _endTime,
       );
       if (mounted) Navigator.pop(context);
     } catch (e) {
@@ -65,8 +98,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               : TextButton(
                   onPressed: _submit,
                   child: const Text('Post',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 16)),
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
         ],
       ),
@@ -89,12 +121,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   final a = _activities[i];
                   final selected = _selectedActivity == a['type'];
                   return GestureDetector(
-                    onTap: () =>
-                        setState(() => _selectedActivity = a['type']!),
+                    onTap: () => setState(() => _selectedActivity = a['type']!),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 150),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                       decoration: BoxDecoration(
                         color: selected
                             ? _activityColor(_selectedActivity)
@@ -108,15 +138,12 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                       ),
                       child: Row(
                         children: [
-                          Text(a['emoji']!,
-                              style: const TextStyle(fontSize: 14)),
+                          Text(a['emoji']!, style: const TextStyle(fontSize: 14)),
                           const SizedBox(width: 6),
                           Text(a['label']!,
                               style: TextStyle(
                                 fontSize: 13,
-                                fontWeight: selected
-                                    ? FontWeight.w600
-                                    : FontWeight.normal,
+                                fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
                                 color: selected
                                     ? _activityTextColor(_selectedActivity)
                                     : Colors.grey.shade700,
@@ -153,6 +180,31 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               ),
             ),
 
+            const SizedBox(height: 16),
+
+            // Time pickers
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _pickTime(isStart: true),
+                    icon: const Icon(Icons.access_time, size: 16),
+                    label: Text(_startTime == null ? 'Start time' : _formatTime(_startTime),
+                        style: const TextStyle(fontSize: 13)),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _pickTime(isStart: false),
+                    icon: const Icon(Icons.access_time, size: 16),
+                    label: Text(_endTime == null ? 'End time' : _formatTime(_endTime),
+                        style: const TextStyle(fontSize: 13)),
+                  ),
+                ),
+              ],
+            ),
+
             const SizedBox(height: 20),
 
             // Max participants
@@ -167,11 +219,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                     min: 0,
                     max: 20,
                     divisions: 20,
-                    label: _maxParticipants == 0
-                        ? 'No limit'
-                        : '$_maxParticipants',
-                    onChanged: (val) =>
-                        setState(() => _maxParticipants = val.toInt()),
+                    label: _maxParticipants == 0 ? 'No limit' : '$_maxParticipants',
+                    onChanged: (val) => setState(() => _maxParticipants = val.toInt()),
                   ),
                 ),
                 SizedBox(
