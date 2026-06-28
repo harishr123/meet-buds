@@ -12,14 +12,19 @@ class SignUpScreen extends StatefulWidget {
 class _SignUpScreenState extends State<SignUpScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  final usernameController = TextEditingController(); //NEW
   final authService = AuthService();
   bool isLoading = false;
   String errorMessage = '';
 
   void signUp() async {
+    if (usernameController.text.trim().isEmpty) {
+      setState(() { errorMessage = 'Username is required'; });
+      return;
+    }
     setState(() { isLoading = true; errorMessage = ''; });
     try {
-      await authService.signUp(emailController.text, passwordController.text);
+      await authService.signUp(emailController.text.trim(), passwordController.text, usernameController.text.trim());
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomeScreen()));
     } catch (e) {
       setState(() { errorMessage = e.toString(); });
@@ -35,6 +40,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
+            TextField(controller: usernameController, decoration: const InputDecoration(labelText: 'Username')),
             TextField(controller: emailController, decoration: const InputDecoration(labelText: 'Email')),
             TextField(controller: passwordController, obscureText: true, decoration: const InputDecoration(labelText: 'Password')),
             const SizedBox(height: 16),
