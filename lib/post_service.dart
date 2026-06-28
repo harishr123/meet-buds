@@ -17,6 +17,38 @@ class PostService {
         .map((snap) => snap.docs.map(PostModel.fromFirestore).toList());
   }
 
+  // NEW: get posts by a specific user
+  Stream<List<PostModel>> getPostsByUser(String userId) {
+    return _db
+        .collection('posts')
+        .where('userId', isEqualTo: userId)
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .map((snap) => snap.docs.map(PostModel.fromFirestore).toList());
+  }
+
+  // NEW: get activities a user has joined
+  Stream<List<PostModel>> getJoinedActivities(String userId) {
+    return _db
+        .collection('posts')
+        .where('joinedBy', arrayContains: userId)
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .map((snap) => snap.docs.map(PostModel.fromFirestore).toList());
+  }
+
+  // NEW: get user profile data
+  Future<Map<String, dynamic>?> getUserProfile(String userId) async {
+    final doc = await _db.collection('users').doc(userId).get();
+    return doc.data();
+  }
+
+  // NEW: update bio
+  Future<void> updateBio(String bio) async {
+    final uid = _auth.currentUser!.uid;
+    await _db.collection('users').doc(uid).update({'bio': bio});
+  }
+
   Future<String> _uploadImage(File image, String postId, int index) async {
     final ref = _storage.ref('posts/$postId/image_$index.jpg');
     await ref.putFile(image);
@@ -55,24 +87,7 @@ class PostService {
       joinedBy: [],
       activityType: activityType,
       maxParticipants: maxParticipants,
-      startTime: startTime,
-      endTime: endTime,
     ).toMap());
-  }
-
-  Future<void> updatePost({
-    required String postId,
-    required String newText,
-    String? newLocation,
-    DateTime? newStartTime,
-    DateTime? newEndTime,
-  }) async {
-    await _db.collection('posts').doc(postId).update({
-      'text': newText,
-      'location': newLocation,
-      'startTime': newStartTime != null ? Timestamp.fromDate(newStartTime) : null,
-      'endTime': newEndTime != null ? Timestamp.fromDate(newEndTime) : null,
-    });
   }
 
   Future<void> toggleLike(String postId) async {
@@ -92,7 +107,7 @@ class PostService {
     final uid = _auth.currentUser!.uid;
     final ref = _db.collection('posts').doc(postId);
     final doc = await ref.get();
-    final data = doc.data() as Map<String, dynamic>?;
+    final data = doc.data();
     final joinedBy = List<String>.from(data?['joinedBy'] ?? []);
     if (joinedBy.contains(uid)) {
       joinedBy.remove(uid);

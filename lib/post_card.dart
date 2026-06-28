@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'post_model.dart';
 import 'post_service.dart';
+import 'screens/profile_screen.dart';
 
 class PostCard extends StatefulWidget {
   final PostModel post;
@@ -30,128 +31,6 @@ class _PostCardState extends State<PostCard> {
       _showJoined = true;
       _loadingJoined = false;
     });
-  }
-
-  void _showEditDialog() {
-    final textCtrl = TextEditingController(text: widget.post.text);
-    final locCtrl = TextEditingController(text: widget.post.location ?? '');
-    DateTime? startTime = widget.post.startTime;
-    DateTime? endTime = widget.post.endTime;
-
-    String formatTime(DateTime? dt) {
-      if (dt == null) return 'Set time';
-      return '${dt.day}/${dt.month} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
-    }
-
-    showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          title: const Text('Edit Post'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: textCtrl,
-                  maxLines: 4,
-                  decoration: const InputDecoration(
-                    labelText: 'Text',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: locCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Location',
-                    prefixIcon: Icon(Icons.location_on_outlined),
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () async {
-                          final now = DateTime.now();
-                          final date = await showDatePicker(
-                            context: ctx,
-                            initialDate: startTime ?? now,
-                            firstDate: now.subtract(const Duration(days: 1)),
-                            lastDate: now.add(const Duration(days: 365)),
-                          );
-                          if (date == null) return;
-                          final time = await showTimePicker(
-                            context: ctx,
-                            initialTime: startTime != null
-                                ? TimeOfDay.fromDateTime(startTime!)
-                                : TimeOfDay.now(),
-                          );
-                          if (time == null) return;
-                          setDialogState(() {
-                            startTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
-                          });
-                        },
-                        icon: const Icon(Icons.access_time, size: 14),
-                        label: Text(formatTime(startTime), style: const TextStyle(fontSize: 12)),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () async {
-                          final now = DateTime.now();
-                          final date = await showDatePicker(
-                            context: ctx,
-                            initialDate: endTime ?? now,
-                            firstDate: now.subtract(const Duration(days: 1)),
-                            lastDate: now.add(const Duration(days: 365)),
-                          );
-                          if (date == null) return;
-                          final time = await showTimePicker(
-                            context: ctx,
-                            initialTime: endTime != null
-                                ? TimeOfDay.fromDateTime(endTime!)
-                                : TimeOfDay.now(),
-                          );
-                          if (time == null) return;
-                          setDialogState(() {
-                            endTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
-                          });
-                        },
-                        icon: const Icon(Icons.access_time, size: 14),
-                        label: Text(formatTime(endTime), style: const TextStyle(fontSize: 12)),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                await widget.postService.updatePost(
-                  postId: widget.post.id,
-                  newText: textCtrl.text.trim(),
-                  newLocation: locCtrl.text.trim().isEmpty ? null : locCtrl.text.trim(),
-                  newStartTime: startTime,
-                  newEndTime: endTime,
-                );
-                if (ctx.mounted) Navigator.pop(ctx);
-              },
-              child: const Text('Save'),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   Map<String, dynamic> _activityConfig(String type) {
@@ -207,45 +86,49 @@ class _PostCardState extends State<PostCard> {
     }
   }
 
-  Widget _statusBadge(ActivityStatus status) {
-    Color color;
-    String label;
-    IconData icon;
+  Color _avatarColor(String username) {
+    final colors = [
+      const Color(0xFFEEEDFE),
+      const Color(0xFFE1F5EE),
+      const Color(0xFFFAECE7),
+      const Color(0xFFE6F1FB),
+      const Color(0xFFFBEAF0),
+    ];
+    return colors[username.codeUnitAt(0) % colors.length];
+  }
+
+  Color _avatarTextColor(String username) {
+    final colors = [
+      const Color(0xFF3C3489),
+      const Color(0xFF085041),
+      const Color(0xFF993C1D),
+      const Color(0xFF0C447C),
+      const Color(0xFF72243E),
+    ];
+    return colors[username.codeUnitAt(0) % colors.length];
+  }
+
+  Color _statusColor(ActivityStatus status) {
     switch (status) {
-      case ActivityStatus.ongoing:
-        color = const Color(0xFF1D9E75);
-        label = 'Ongoing';
-        icon = Icons.circle;
-        break;
-      case ActivityStatus.upcoming:
-        color = const Color(0xFF185FA5);
-        label = 'Upcoming';
-        icon = Icons.schedule;
-        break;
-      case ActivityStatus.completed:
-        color = Colors.grey.shade500;
-        label = 'Completed';
-        icon = Icons.check_circle_outline;
-        break;
+      case ActivityStatus.upcoming: return const Color(0xFF378ADD);
+      case ActivityStatus.ongoing: return const Color(0xFF1D9E75);
+      case ActivityStatus.completed: return Colors.grey;
     }
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(99),
-        border: Border.all(color: color.withOpacity(0.4)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 10, color: color),
-          const SizedBox(width: 4),
-          Text(label,
-              style: TextStyle(
-                  fontSize: 11, fontWeight: FontWeight.w600, color: color)),
-        ],
-      ),
-    );
+  }
+
+  String _statusLabel(ActivityStatus status) {
+    switch (status) {
+      case ActivityStatus.upcoming: return 'Upcoming';
+      case ActivityStatus.ongoing: return 'Ongoing';
+      case ActivityStatus.completed: return 'Completed';
+    }
+  }
+
+  String _formatTime(DateTime dt) {
+    final hour = dt.hour % 12 == 0 ? 12 : dt.hour % 12;
+    final minute = dt.minute.toString().padLeft(2, '0');
+    final period = dt.hour < 12 ? 'AM' : 'PM';
+    return '$hour:$minute $period';
   }
 
   @override
@@ -263,7 +146,6 @@ class _PostCardState extends State<PostCard> {
     final maxP = widget.post.maxParticipants;
     final isFull = maxP > 0 && joinedCount >= maxP;
     final spotsLeft = maxP > 0 ? maxP - joinedCount : null;
-    final hasTime = widget.post.startTime != null && widget.post.endTime != null;
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -286,55 +168,73 @@ class _PostCardState extends State<PostCard> {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             child: Row(
               children: [
-                // Avatar
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.7),
-                    shape: BoxShape.circle,
+                // Tappable avatar
+                GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ProfileScreen(userId: widget.post.userId),
+                    ),
                   ),
-                  child: Center(
-                    child: Text(
-                      username[0].toUpperCase(),
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: headerText,
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        username[0].toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: headerText,
+                        ),
                       ),
                     ),
                   ),
                 ),
                 const SizedBox(width: 10),
+                // Tappable username
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(username,
-                          style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: headerText)),
-                      if (widget.post.location != null)
-                        Row(
-                          children: [
-                            Icon(Icons.location_on,
-                                size: 11, color: headerText.withOpacity(0.7)),
-                            const SizedBox(width: 2),
-                            Text(widget.post.location!,
-                                style: TextStyle(
-                                    fontSize: 11,
-                                    color: headerText.withOpacity(0.7))),
-                          ],
-                        ),
-                    ],
+                  child: GestureDetector(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ProfileScreen(userId: widget.post.userId),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(username,
+                            style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: headerText)),
+                        if (widget.post.location != null)
+                          Row(
+                            children: [
+                              Icon(Icons.location_on,
+                                  size: 11,
+                                  color: headerText.withValues(alpha: 0.7)),
+                              const SizedBox(width: 2),
+                              Text(widget.post.location!,
+                                  style: TextStyle(
+                                      fontSize: 11,
+                                      color: headerText.withValues(alpha: 0.7))),
+                            ],
+                          ),
+                      ],
+                    ),
                   ),
                 ),
                 // Activity badge
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     borderRadius: BorderRadius.circular(99),
                   ),
                   child: Row(
@@ -353,20 +253,19 @@ class _PostCardState extends State<PostCard> {
                 const SizedBox(width: 4),
                 Text(_timeAgo(widget.post.timestamp),
                     style: TextStyle(
-                        fontSize: 11, color: headerText.withOpacity(0.7))),
+                        fontSize: 11,
+                        color: headerText.withValues(alpha: 0.7))),
                 if (isOwner)
                   PopupMenuButton<String>(
                     icon: Icon(Icons.more_horiz, size: 18, color: headerText),
                     onSelected: (val) {
-                      if (val == 'edit') {
-                        _showEditDialog();
-                      } else if (val == 'delete') {
+                      if (val == 'delete') {
                         widget.postService.deletePost(widget.post.id);
                       }
                     },
                     itemBuilder: (_) => [
-                      const PopupMenuItem(value: 'edit', child: Text('Edit')),
-                      const PopupMenuItem(value: 'delete', child: Text('Delete')),
+                      const PopupMenuItem(
+                          value: 'delete', child: Text('Delete')),
                     ],
                   ),
               ],
@@ -379,12 +278,6 @@ class _PostCardState extends State<PostCard> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Status badge
-                if (hasTime) ...[
-                  _statusBadge(widget.post.status),
-                  const SizedBox(height: 8),
-                ],
-
                 if (widget.post.text.isNotEmpty)
                   Text(widget.post.text,
                       style: const TextStyle(fontSize: 15, height: 1.45)),
@@ -407,8 +300,7 @@ class _PostCardState extends State<PostCard> {
                                   const SizedBox(width: 6),
                               itemBuilder: (_, i) => ClipRRect(
                                 borderRadius: BorderRadius.circular(8),
-                                child: Image.network(
-                                    widget.post.imageUrls[i],
+                                child: Image.network(widget.post.imageUrls[i],
                                     width: 240,
                                     height: 200,
                                     fit: BoxFit.cover),
@@ -420,6 +312,57 @@ class _PostCardState extends State<PostCard> {
 
                 const SizedBox(height: 12),
 
+                // Start/end time + status
+                if (widget.post.startTime != null) ...[
+                  Row(
+                    children: [
+                      Icon(Icons.access_time,
+                          size: 13, color: Colors.grey.shade500),
+                      const SizedBox(width: 4),
+                      Text(
+                        widget.post.endTime != null
+                            ? '${_formatTime(widget.post.startTime!)} → ${_formatTime(widget.post.endTime!)}'
+                            : 'From ${_formatTime(widget.post.startTime!)}',
+                        style: TextStyle(
+                            fontSize: 12, color: Colors.grey.shade500),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 7, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: _statusColor(widget.post.status)
+                              .withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(99),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: _statusColor(widget.post.status),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              _statusLabel(widget.post.status),
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: _statusColor(widget.post.status),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                ],
+
+                // Spots remaining
                 if (maxP > 0) ...[
                   Row(
                     children: [
@@ -471,6 +414,7 @@ class _PostCardState extends State<PostCard> {
                       ),
                     ),
                     const SizedBox(width: 24),
+
                     GestureDetector(
                       onTap: (isOwner || isFull)
                           ? null
@@ -516,6 +460,7 @@ class _PostCardState extends State<PostCard> {
                       ),
                     ),
                     const SizedBox(width: 12),
+
                     if (joinedCount > 0)
                       GestureDetector(
                         onTap: _toggleShowJoined,
