@@ -14,9 +14,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   final _postService = PostService();
   bool _loading = false;
   String _selectedActivity = 'general';
-  int _maxParticipants = 0;
+  int _maxParticipants = 2;
   DateTime? _startTime;
   DateTime? _endTime;
+  String _errorMessage = '';
 
   static const _activities = [
     {'type': 'gym', 'label': 'Gym', 'emoji': '🏋️'},
@@ -48,6 +49,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       } else {
         _endTime = picked;
       }
+      _errorMessage = '';
     });
   }
 
@@ -57,15 +59,36 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   }
 
   Future<void> _submit() async {
-    if (_textController.text.trim().isEmpty) return;
-    setState(() => _loading = true);
+    final text = _textController.text.trim();
+    final location = _locationController.text.trim();
+
+    if (text.isEmpty) {
+      setState(() => _errorMessage = 'Please describe your activity.');
+      return;
+    }
+    if (location.isEmpty) {
+      setState(() => _errorMessage = 'Please add a location.');
+      return;
+    }
+    if (_startTime == null) {
+      setState(() => _errorMessage = 'Please set a start time.');
+      return;
+    }
+    if (_endTime == null) {
+      setState(() => _errorMessage = 'Please set an end time.');
+      return;
+    }
+    if (_endTime!.isBefore(_startTime!)) {
+      setState(() => _errorMessage = 'End time must be after start time.');
+      return;
+    }
+
+    setState(() { _loading = true; _errorMessage = ''; });
     try {
       await _postService.createPost(
-        text: _textController.text.trim(),
+        text: text,
         images: [],
-        location: _locationController.text.trim().isEmpty
-            ? null
-            : _locationController.text.trim(),
+        location: location,
         activityType: _selectedActivity,
         maxParticipants: _maxParticipants,
         startTime: _startTime,
@@ -102,12 +125,11 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 ),
         ],
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Activity type picker
             const Text('Activity type',
                 style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
             const SizedBox(height: 8),
@@ -158,48 +180,59 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
             const SizedBox(height: 20),
 
-            // Post text
             TextField(
               controller: _textController,
-              maxLines: 5,
+              maxLines: 4,
               decoration: const InputDecoration(
                 hintText: "What's happening? Where are you going?",
                 border: OutlineInputBorder(),
               ),
+              onChanged: (_) => setState(() => _errorMessage = ''),
             ),
 
             const SizedBox(height: 16),
 
-            // Location
             TextField(
               controller: _locationController,
               decoration: const InputDecoration(
-                hintText: 'Add location (optional)',
+                hintText: 'Location (required)',
                 prefixIcon: Icon(Icons.location_on_outlined),
                 border: OutlineInputBorder(),
               ),
+              onChanged: (_) => setState(() => _errorMessage = ''),
             ),
 
             const SizedBox(height: 16),
 
-            // Time pickers
             Row(
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () => _pickTime(isStart: true),
-                    icon: const Icon(Icons.access_time, size: 16),
-                    label: Text(_startTime == null ? 'Start time' : _formatTime(_startTime),
-                        style: const TextStyle(fontSize: 13)),
+                    icon: Icon(Icons.access_time, size: 16,
+                        color: _startTime == null ? Colors.grey : const Color(0xFF1D9E75)),
+                    label: Text(
+                      _startTime == null ? 'Start time (required)' : _formatTime(_startTime),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: _startTime == null ? Colors.grey : const Color(0xFF1D9E75),
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () => _pickTime(isStart: false),
-                    icon: const Icon(Icons.access_time, size: 16),
-                    label: Text(_endTime == null ? 'End time' : _formatTime(_endTime),
-                        style: const TextStyle(fontSize: 13)),
+                    icon: Icon(Icons.access_time, size: 16,
+                        color: _endTime == null ? Colors.grey : const Color(0xFF1D9E75)),
+                    label: Text(
+                      _endTime == null ? 'End time (required)' : _formatTime(_endTime),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: _endTime == null ? Colors.grey : const Color(0xFF1D9E75),
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -207,7 +240,6 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
             const SizedBox(height: 20),
 
-            // Max participants
             const Text('Max participants',
                 style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
             const SizedBox(height: 8),
@@ -216,22 +248,43 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 Expanded(
                   child: Slider(
                     value: _maxParticipants.toDouble(),
-                    min: 0,
+                    min: 2,
                     max: 20,
-                    divisions: 20,
-                    label: _maxParticipants == 0 ? 'No limit' : '$_maxParticipants',
+                    divisions: 18,
+                    label: '$_maxParticipants',
                     onChanged: (val) => setState(() => _maxParticipants = val.toInt()),
                   ),
                 ),
                 SizedBox(
                   width: 70,
                   child: Text(
-                    _maxParticipants == 0 ? 'No limit' : '$_maxParticipants people',
+                    '$_maxParticipants people',
                     style: const TextStyle(fontSize: 13),
                   ),
                 ),
               ],
             ),
+
+            if (_errorMessage.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFCEBEB),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.error_outline, size: 16, color: Color(0xFFA32D2D)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(_errorMessage,
+                          style: const TextStyle(color: Color(0xFFA32D2D), fontSize: 13)),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
       ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'post_model.dart';
 import 'post_service.dart';
+import 'screens/profile_screen.dart';
 
 class PostCard extends StatefulWidget {
   final PostModel post;
@@ -30,6 +31,15 @@ class _PostCardState extends State<PostCard> {
       _showJoined = true;
       _loadingJoined = false;
     });
+  }
+
+  void _openProfile() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ProfileScreen(userId: widget.post.userId),
+      ),
+    );
   }
 
   void _showEditDialog() {
@@ -248,6 +258,14 @@ class _PostCardState extends State<PostCard> {
     );
   }
 
+  String _formatDateTime(DateTime dt) {
+    final day = dt.day.toString().padLeft(2, '0');
+    final month = dt.month.toString().padLeft(2, '0');
+    final hour = dt.hour.toString().padLeft(2, '0');
+    final min = dt.minute.toString().padLeft(2, '0');
+    return '$day/$month $hour:$min';
+  }
+
   @override
   Widget build(BuildContext context) {
     final uid = FirebaseAuth.instance.currentUser?.uid;
@@ -286,50 +304,56 @@ class _PostCardState extends State<PostCard> {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             child: Row(
               children: [
-                // Avatar
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.7),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text(
-                      username[0].toUpperCase(),
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: headerText,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                // Tappable avatar + username
+                GestureDetector(
+                  onTap: _openProfile,
+                  child: Row(
                     children: [
-                      Text(username,
-                          style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: headerText)),
-                      if (widget.post.location != null)
-                        Row(
-                          children: [
-                            Icon(Icons.location_on,
-                                size: 11, color: headerText.withOpacity(0.7)),
-                            const SizedBox(width: 2),
-                            Text(widget.post.location!,
-                                style: TextStyle(
-                                    fontSize: 11,
-                                    color: headerText.withOpacity(0.7))),
-                          ],
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.7),
+                          shape: BoxShape.circle,
                         ),
+                        child: Center(
+                          child: Text(
+                            username[0].toUpperCase(),
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: headerText,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(username,
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: headerText)),
+                          if (widget.post.location != null)
+                            Row(
+                              children: [
+                                Icon(Icons.location_on,
+                                    size: 11, color: headerText.withOpacity(0.7)),
+                                const SizedBox(width: 2),
+                                Text(widget.post.location!,
+                                    style: TextStyle(
+                                        fontSize: 11,
+                                        color: headerText.withOpacity(0.7))),
+                              ],
+                            ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
+                const Spacer(),
                 // Activity badge
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -379,9 +403,20 @@ class _PostCardState extends State<PostCard> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Status badge
+                // Status badge + time row
                 if (hasTime) ...[
-                  _statusBadge(widget.post.status),
+                  Row(
+                    children: [
+                      _statusBadge(widget.post.status),
+                      const SizedBox(width: 8),
+                      Icon(Icons.access_time, size: 12, color: Colors.grey.shade400),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${_formatDateTime(widget.post.startTime!)} – ${_formatDateTime(widget.post.endTime!)}',
+                        style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 8),
                 ],
 
@@ -426,9 +461,7 @@ class _PostCardState extends State<PostCard> {
                       Icon(
                         isFull ? Icons.block : Icons.people_outline,
                         size: 13,
-                        color: isFull
-                            ? Colors.red.shade400
-                            : Colors.grey.shade500,
+                        color: isFull ? Colors.red.shade400 : Colors.grey.shade500,
                       ),
                       const SizedBox(width: 4),
                       Text(
@@ -437,9 +470,7 @@ class _PostCardState extends State<PostCard> {
                             : '$spotsLeft spot${spotsLeft == 1 ? '' : 's'} left',
                         style: TextStyle(
                           fontSize: 12,
-                          color: isFull
-                              ? Colors.red.shade400
-                              : Colors.grey.shade500,
+                          color: isFull ? Colors.red.shade400 : Colors.grey.shade500,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -452,21 +483,17 @@ class _PostCardState extends State<PostCard> {
                 Row(
                   children: [
                     GestureDetector(
-                      onTap: () =>
-                          widget.postService.toggleLike(widget.post.id),
+                      onTap: () => widget.postService.toggleLike(widget.post.id),
                       child: Row(
                         children: [
                           Icon(
                             isLiked ? Icons.favorite : Icons.favorite_border,
                             size: 19,
-                            color: isLiked
-                                ? const Color(0xFFD4537E)
-                                : Colors.grey.shade400,
+                            color: isLiked ? const Color(0xFFD4537E) : Colors.grey.shade400,
                           ),
                           const SizedBox(width: 5),
                           Text('${widget.post.likes.length}',
-                              style: TextStyle(
-                                  fontSize: 13, color: Colors.grey.shade500)),
+                              style: TextStyle(fontSize: 13, color: Colors.grey.shade500)),
                         ],
                       ),
                     ),
@@ -474,8 +501,7 @@ class _PostCardState extends State<PostCard> {
                     GestureDetector(
                       onTap: (isOwner || isFull)
                           ? null
-                          : () =>
-                              widget.postService.toggleJoin(widget.post.id),
+                          : () => widget.postService.toggleJoin(widget.post.id),
                       child: Row(
                         children: [
                           Icon(
@@ -500,9 +526,7 @@ class _PostCardState extends State<PostCard> {
                                         : 'Join',
                             style: TextStyle(
                               fontSize: 13,
-                              fontWeight: isJoined
-                                  ? FontWeight.w500
-                                  : FontWeight.normal,
+                              fontWeight: isJoined ? FontWeight.w500 : FontWeight.normal,
                               color: isOwner
                                   ? Colors.grey.shade300
                                   : isFull && !isJoined
@@ -524,14 +548,11 @@ class _PostCardState extends State<PostCard> {
                                 width: 12,
                                 height: 12,
                                 child: CircularProgressIndicator(
-                                    strokeWidth: 1.5,
-                                    color: Colors.grey.shade400),
+                                    strokeWidth: 1.5, color: Colors.grey.shade400),
                               )
                             : Text(
                                 '$joinedCount joining ${_showJoined ? '▴' : '▾'}',
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey.shade500)),
+                                style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
                       ),
                   ],
                 ),
@@ -543,15 +564,13 @@ class _PostCardState extends State<PostCard> {
                     runSpacing: 6,
                     children: _joinedUsernames
                         .map((name) => Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 4),
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
                                 color: gradientColors[0],
                                 borderRadius: BorderRadius.circular(99),
                               ),
                               child: Text(name,
-                                  style: TextStyle(
-                                      fontSize: 12, color: headerText)),
+                                  style: TextStyle(fontSize: 12, color: headerText)),
                             ))
                         .toList(),
                   ),

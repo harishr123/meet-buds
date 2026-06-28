@@ -1,12 +1,9 @@
-import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'post_model.dart';
 
 class PostService {
   final _db = FirebaseFirestore.instance;
-  final _storage = FirebaseStorage.instance;
   final _auth = FirebaseAuth.instance;
 
   Stream<List<PostModel>> getFeed() {
@@ -17,15 +14,9 @@ class PostService {
         .map((snap) => snap.docs.map(PostModel.fromFirestore).toList());
   }
 
-  Future<String> _uploadImage(File image, String postId, int index) async {
-    final ref = _storage.ref('posts/$postId/image_$index.jpg');
-    await ref.putFile(image);
-    return await ref.getDownloadURL();
-  }
-
   Future<void> createPost({
     required String text,
-    required List<File> images,
+    required List<String> images,
     String? location,
     String activityType = 'general',
     int maxParticipants = 0,
@@ -34,11 +25,6 @@ class PostService {
   }) async {
     final user = _auth.currentUser!;
     final postRef = _db.collection('posts').doc();
-    final imageUrls = <String>[];
-    for (int i = 0; i < images.length; i++) {
-      final url = await _uploadImage(images[i], postRef.id, i);
-      imageUrls.add(url);
-    }
     final userDoc = await _db.collection('users').doc(user.uid).get();
     final username = userDoc.data()?['username'] ?? user.email ?? 'Anonymous';
     final avatar = userDoc.data()?['avatarUrl'];
@@ -48,7 +34,7 @@ class PostService {
       username: username,
       userAvatar: avatar,
       text: text,
-      imageUrls: imageUrls,
+      imageUrls: [],
       location: location,
       timestamp: DateTime.now(),
       likes: [],
@@ -114,5 +100,33 @@ class PostService {
 
   Future<void> deletePost(String postId) async {
     await _db.collection('posts').doc(postId).delete();
+  }
+
+  Future<Map<String, dynamic>?> getUserProfile(String userId) async {
+    final doc = await _db.collection('users').doc(userId).get();
+    return doc.data();
+  }
+
+  Future<void> updateBio(String bio) async {
+    final uid = _auth.currentUser!.uid;
+    await _db.collection('users').doc(uid).update({'bio': bio});
+  }
+
+  Stream<List<PostModel>> getPostsByUser(String userId) {
+    return _db
+        .collection('posts')
+        .where('userId', isEqualTo: userId)
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .map((snap) => snap.docs.map(PostModel.fromFirestore).toList());
+  }
+
+  Stream<List<PostModel>> getJoinedActivities(String userId) {
+    return _db
+        .collection('posts')
+        .where('joinedBy', arrayContains: userId)
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .map((snap) => snap.docs.map(PostModel.fromFirestore).toList());
   }
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'post_service.dart';
 import 'post_card.dart';
-import 'create_post_screen.dart';
 
 class FeedScreen extends StatelessWidget {
   const FeedScreen({super.key});
@@ -13,13 +12,6 @@ class FeedScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Feed'),
         centerTitle: true,
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const CreatePostScreen()),
-        ),
-        child: const Icon(Icons.add),
       ),
       body: Container(
         color: Colors.white,
