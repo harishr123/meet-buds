@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/auth_service.dart';
-import 'home_screen.dart';
+import 'verify_email_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -19,6 +19,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final authService = AuthService();
   bool isLoading = false;
   String errorMessage = '';
+
+  bool _isValidEmail(String email) {
+    return email.endsWith('@u.nus.edu') || email.endsWith('@gmail.com'); // remove @gmail.com before launch
+  }
 
   String _friendlyError(dynamic e) {
     if (e is FirebaseAuthException) {
@@ -50,6 +54,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
       setState(() => errorMessage = 'Please enter your email.');
       return;
     }
+    if (!_isValidEmail(email)) {
+      setState(() => errorMessage = 'Please use your NUS email (@u.nus.edu).');
+      return;
+    }
     if (password.isEmpty) {
       setState(() => errorMessage = 'Please enter a password.');
       return;
@@ -64,7 +72,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
             .doc(cred!.user!.uid)
             .update({'bio': bio});
       }
-      if (mounted) Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomeScreen()));
+      // Send verification email
+      await FirebaseAuth.instance.currentUser?.sendEmailVerification();
+      if (mounted) {
+        Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (_) => const VerifyEmailScreen()));
+      }
     } catch (e) {
       setState(() { errorMessage = _friendlyError(e); });
     }
@@ -101,7 +114,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 controller: emailController,
                 keyboardType: TextInputType.emailAddress,
                 decoration: const InputDecoration(
-                  labelText: 'Email',
+                  labelText: 'NUS Email (@u.nus.edu)',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.email_outlined),
                 ),

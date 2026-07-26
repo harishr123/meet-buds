@@ -78,7 +78,7 @@ class PostService {
     final uid = _auth.currentUser!.uid;
     final ref = _db.collection('posts').doc(postId);
     final doc = await ref.get();
-    final data = doc.data() as Map<String, dynamic>?;
+    final data = doc.data();
     final joinedBy = List<String>.from(data?['joinedBy'] ?? []);
     if (joinedBy.contains(uid)) {
       joinedBy.remove(uid);
