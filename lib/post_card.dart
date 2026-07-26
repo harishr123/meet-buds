@@ -4,6 +4,7 @@ import 'post_model.dart';
 import 'post_service.dart';
 import 'screens/profile_screen.dart';
 import 'report_helper.dart';
+import 'comments_screen.dart';
 
 class PostCard extends StatefulWidget {
   final PostModel post;
@@ -561,6 +562,24 @@ class _PostCardState extends State<PostCard> {
                                           : Colors.grey.shade400,
                             ),
                           ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(width: 24),
+                    GestureDetector(
+                      onTap: () => showCommentsSheet(
+                        context: context,
+                        postId: widget.post.id,
+                        postService: widget.postService,
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.mode_comment_outlined,
+                              size: 18, color: Colors.grey.shade400),
+                          const SizedBox(width: 5),
+                          Text('${widget.post.commentCount}',
+                              style: TextStyle(fontSize: 13, color: Colors.grey.shade500)),
                         ],
                       ),
                     ),

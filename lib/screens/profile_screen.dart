@@ -4,6 +4,7 @@ import '../post_model.dart';
 import '../post_service.dart';
 import '../post_card.dart';
 import '../services/auth_service.dart';
+import '../services/notification_service.dart';
 import 'login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -91,6 +92,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
+              await NotificationService.clearToken();
               await AuthService().signOut();
               if (mounted) {
                 Navigator.pushAndRemoveUntil(

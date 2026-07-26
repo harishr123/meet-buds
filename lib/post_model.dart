@@ -19,6 +19,7 @@ class PostModel {
   final int maxParticipants;
   final DateTime? startTime;
   final DateTime? endTime;
+  final int commentCount;
 
   PostModel({
     required this.id,
@@ -37,6 +38,7 @@ class PostModel {
     required this.maxParticipants,
     this.startTime,
     this.endTime,
+    this.commentCount = 0,
   });
 
   ActivityStatus get status {
@@ -73,6 +75,7 @@ class PostModel {
       endTime: data['endTime'] != null
           ? (data['endTime'] as Timestamp).toDate()
           : null,
+      commentCount: data['commentCount'] ?? 0,
     );
   }
 
@@ -93,6 +96,7 @@ class PostModel {
       'maxParticipants': maxParticipants,
       'startTime': startTime != null ? Timestamp.fromDate(startTime!) : null,
       'endTime': endTime != null ? Timestamp.fromDate(endTime!) : null,
+      'commentCount': commentCount,
     };
   }
 }
