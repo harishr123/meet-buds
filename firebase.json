@@ -38,8 +38,7 @@
       }
     }
   },
-<<<<<<< HEAD
-  "functions": [
+"functions": [
     {
       "source": "functions",
       "codebase": "default",
@@ -50,9 +49,7 @@
         "firebase-debug.*.log"
       ]
     }
-  ]
-}
-=======
+  ],
   "hosting": {
     "public": "build/web",
     "ignore": [
@@ -68,4 +65,3 @@
     ]
   }
 }
->>>>>>> 94f30818d93df73cda7bb056d60bdb42483d2396
