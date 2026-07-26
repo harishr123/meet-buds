@@ -138,7 +138,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: _activities.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                separatorBuilder: (_, _) => const SizedBox(width: 8),
                 itemBuilder: (_, i) {
                   final a = _activities[i];
                   final selected = _selectedActivity == a['type'];

@@ -242,9 +242,9 @@ class _PostCardState extends State<PostCard> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(99),
-        border: Border.all(color: color.withOpacity(0.4)),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -314,7 +314,7 @@ class _PostCardState extends State<PostCard> {
                         width: 36,
                         height: 36,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.7),
+                          color: Colors.white.withValues(alpha: 0.7),
                           shape: BoxShape.circle,
                         ),
                         child: Center(
@@ -341,12 +341,12 @@ class _PostCardState extends State<PostCard> {
                             Row(
                               children: [
                                 Icon(Icons.location_on,
-                                    size: 11, color: headerText.withOpacity(0.7)),
+                                    size: 11, color: headerText.withValues(alpha: 0.7)),
                                 const SizedBox(width: 2),
                                 Text(widget.post.location!,
                                     style: TextStyle(
                                         fontSize: 11,
-                                        color: headerText.withOpacity(0.7))),
+                                        color: headerText.withValues(alpha: 0.7))),
                               ],
                             ),
                         ],
@@ -359,7 +359,7 @@ class _PostCardState extends State<PostCard> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     borderRadius: BorderRadius.circular(99),
                   ),
                   child: Row(
@@ -378,7 +378,7 @@ class _PostCardState extends State<PostCard> {
                 const SizedBox(width: 4),
                 Text(_timeAgo(widget.post.timestamp),
                     style: TextStyle(
-                        fontSize: 11, color: headerText.withOpacity(0.7))),
+                        fontSize: 11, color: headerText.withValues(alpha: 0.7))),
                 if (isOwner)
                   PopupMenuButton<String>(
                     icon: Icon(Icons.more_horiz, size: 18, color: headerText),
@@ -439,7 +439,7 @@ class _PostCardState extends State<PostCard> {
                             child: ListView.separated(
                               scrollDirection: Axis.horizontal,
                               itemCount: widget.post.imageUrls.length,
-                              separatorBuilder: (_, __) =>
+                              separatorBuilder: (_, _) =>
                                   const SizedBox(width: 6),
                               itemBuilder: (_, i) => ClipRRect(
                                 borderRadius: BorderRadius.circular(8),

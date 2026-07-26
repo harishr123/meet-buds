@@ -3,6 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
 import 'signup_screen.dart';
 import 'home_screen.dart';
+import 'verify_email_screen.dart';
+
+// DEV ONLY — set to false before Orbital submission
+const bool kSkipEmailVerification = true;
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -57,7 +61,17 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() { isLoading = true; errorMessage = ''; });
     try {
       await authService.login(emailController.text.trim(), passwordController.text);
-      if (mounted) Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomeScreen()));
+      final user = FirebaseAuth.instance.currentUser;
+      await user?.reload();
+      if (!mounted) return;
+      if (user != null && !user.emailVerified && !kSkipEmailVerification) {
+        // Not verified — send to verify screen
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (_) => const VerifyEmailScreen()));
+      } else {
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (_) => const HomeScreen()));
+      }
     } catch (e) {
       setState(() { errorMessage = _friendlyError(e); });
     }
