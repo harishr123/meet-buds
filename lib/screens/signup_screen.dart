@@ -21,7 +21,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   String errorMessage = '';
 
   bool _isValidEmail(String email) {
-    return email.endsWith('@u.nus.edu') || email.endsWith('@gmail.com'); // remove @gmail.com before launch
+    return email.endsWith('@u.nus.edu');
   }
 
   String _friendlyError(dynamic e) {

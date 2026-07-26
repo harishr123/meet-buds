@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
@@ -6,7 +7,7 @@ import 'home_screen.dart';
 import 'verify_email_screen.dart';
 
 // DEV ONLY — set to false before Orbital submission
-const bool kSkipEmailVerification = true;
+const bool kSkipEmailVerification = false;
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -58,6 +59,11 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void login() async {
+    final email = emailController.text.trim();
+  if (!email.endsWith('@u.nus.edu')) {
+    setState(() => errorMessage = 'Please use your NUS email (@u.nus.edu).');
+    return;
+  }
     setState(() { isLoading = true; errorMessage = ''; });
     try {
       await authService.login(emailController.text.trim(), passwordController.text);

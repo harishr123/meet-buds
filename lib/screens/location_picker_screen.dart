@@ -12,7 +12,11 @@ class LocationPickResult {
 }
 
 class LocationPickerScreen extends StatefulWidget {
-  const LocationPickerScreen({super.key});
+  /// Where to drop the pin when the screen opens. Pass the post's existing
+  /// coordinates when editing; leave null when creating a new post.
+  final LatLng? initialPosition;
+
+  const LocationPickerScreen({super.key, this.initialPosition});
 
   @override
   State<LocationPickerScreen> createState() => _LocationPickerScreenState();
@@ -22,8 +26,14 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
   // Default camera position centered roughly on NUS Kent Ridge campus.
   static const LatLng _defaultCenter = LatLng(1.2966, 103.7764);
 
-  LatLng _pinPosition = _defaultCenter;
+  late LatLng _pinPosition;
   GoogleMapController? _mapController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pinPosition = widget.initialPosition ?? _defaultCenter;
+  }
 
   void _updatePin(LatLng position) {
     setState(() {
@@ -43,8 +53,8 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
         children: [
           Expanded(
             child: GoogleMap(
-              initialCameraPosition: const CameraPosition(
-                target: _defaultCenter,
+              initialCameraPosition: CameraPosition(
+                target: widget.initialPosition ?? _defaultCenter,
                 zoom: 16,
               ),
               onMapCreated: (controller) => _mapController = controller,

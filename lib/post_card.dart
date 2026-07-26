@@ -5,6 +5,8 @@ import 'post_service.dart';
 import 'screens/profile_screen.dart';
 import 'report_helper.dart';
 import 'comments_screen.dart';
+import 'screens/location_picker_screen.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class PostCard extends StatefulWidget {
   final PostModel post;
@@ -47,6 +49,8 @@ class _PostCardState extends State<PostCard> {
   void _showEditDialog() {
     final textCtrl = TextEditingController(text: widget.post.text);
     final locCtrl = TextEditingController(text: widget.post.location ?? '');
+    double? newLat = widget.post.locationLat;
+    double? newLng = widget.post.locationLng;
     DateTime? startTime = widget.post.startTime;
     DateTime? endTime = widget.post.endTime;
 
@@ -73,12 +77,39 @@ class _PostCardState extends State<PostCard> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                TextField(
-                  controller: locCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Location',
-                    prefixIcon: Icon(Icons.location_on_outlined),
-                    border: OutlineInputBorder(),
+                InkWell(
+                  onTap: () async {
+                    final navigator = Navigator.of(ctx);
+                    final result = await navigator.push<LocationPickResult>(
+                      MaterialPageRoute(
+                        builder: (_) => LocationPickerScreen(
+                          initialPosition: (newLat != null && newLng != null)
+                              ? LatLng(newLat!, newLng!)
+                              : null,
+                        ),
+                      ),
+                    );
+                    if (result == null) return;
+                    setDialogState(() {
+                      locCtrl.text = result.label;
+                      newLat = result.lat;
+                      newLng = result.lng;
+                    });
+                  },
+                  child: InputDecorator(
+                    decoration: const InputDecoration(
+                      labelText: 'Location',
+                      prefixIcon: Icon(Icons.location_on_outlined),
+                      border: OutlineInputBorder(),
+                    ),
+                    child: Text(
+                      locCtrl.text.isEmpty ? 'Tap to set location' : locCtrl.text,
+                      style: TextStyle(
+                        color: locCtrl.text.isEmpty
+                            ? Colors.grey.shade500
+                            : Colors.black87,
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -153,6 +184,8 @@ class _PostCardState extends State<PostCard> {
                   postId: widget.post.id,
                   newText: textCtrl.text.trim(),
                   newLocation: locCtrl.text.trim().isEmpty ? null : locCtrl.text.trim(),
+                  newLocationLat: newLat,
+                  newLocationLng: newLng,
                   newStartTime: startTime,
                   newEndTime: endTime,
                 );
@@ -306,69 +339,65 @@ class _PostCardState extends State<PostCard> {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             child: Row(
               children: [
-                // Tappable avatar + username — Flexible so long location
-                // names truncate instead of pushing the right side offscreen.
-                Flexible(
+                GestureDetector(
+                  onTap: _openProfile,
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        username[0].toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: headerText,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
                   child: GestureDetector(
                     onTap: _openProfile,
-                    child: Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.7),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Center(
-                            child: Text(
-                              username[0].toUpperCase(),
-                              style: TextStyle(
-                                fontSize: 15,
+                        Text(username,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                            style: TextStyle(
+                                fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: headerText,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Flexible(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
+                                color: headerText)),
+                        if (widget.post.location != null)
+                          Row(
                             children: [
-                              Text(username,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: headerText)),
-                              if (widget.post.location != null)
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.location_on,
-                                        size: 11, color: headerText.withValues(alpha: 0.7)),
-                                    const SizedBox(width: 2),
-                                    Flexible(
-                                      child: Text(widget.post.location!,
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 1,
-                                          style: TextStyle(
-                                              fontSize: 11,
-                                              color: headerText.withValues(alpha: 0.7))),
-                                    ),
-                                  ],
-                                ),
+                              Icon(Icons.location_on,
+                                  size: 11, color: headerText.withValues(alpha: 0.7)),
+                              const SizedBox(width: 2),
+                              Expanded(
+                                child: Text(widget.post.location!,
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                    style: TextStyle(
+                                        fontSize: 11,
+                                        color: headerText.withValues(alpha: 0.7))),
+                              ),
                             ],
                           ),
-                        ),
                       ],
                     ),
                   ),
                 ),
                 const SizedBox(width: 8),
+    // ...badge, time, PopupMenuButton unchanged from here
+              // ...badge, time, PopupMenuButton unchanged below
                 // Activity badge
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -394,31 +423,30 @@ class _PostCardState extends State<PostCard> {
                 Text(_timeAgo(widget.post.timestamp),
                     style: TextStyle(
                         fontSize: 11, color: headerText.withValues(alpha: 0.7))),
-                        
-                  PopupMenuButton<String>(
-                    icon: Icon(Icons.more_horiz, size: 18, color: headerText),
-                    onSelected: (val) {
-                      if (val == 'edit') {
-                        _showEditDialog();
-                      } else if (val == 'delete') {
-                        widget.postService.deletePost(widget.post.id);
-                      } else if (val == 'report') {
-                        showReportDialog(
-                          context, 
-                          postId: widget.post.id, 
-                          reportedUserId: widget.post.userId
-                        );
-                      }
-                    },
-                    itemBuilder: (_) => isOwner
-                        ? [
-                            const PopupMenuItem(value: 'edit', child: Text('Edit')),
-                            const PopupMenuItem(value: 'delete', child: Text('Delete'))
-                          ]
-                        : [
-                            const PopupMenuItem(value: 'report', child: Text('Report')),
-                          ],
-                  ),
+                PopupMenuButton<String>(
+                  icon: Icon(Icons.more_horiz, size: 18, color: headerText),
+                  onSelected: (val) {
+                    if (val == 'edit') {
+                      _showEditDialog();
+                    } else if (val == 'delete') {
+                      widget.postService.deletePost(widget.post.id);
+                    } else if (val == 'report') {
+                      showReportDialog(
+                        context,
+                        postId: widget.post.id,
+                        reportedUserId: widget.post.userId,
+                      );
+                    }
+                  },
+                  itemBuilder: (_) => isOwner
+                      ? [
+                          const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                          const PopupMenuItem(value: 'delete', child: Text('Delete')),
+                        ]
+                      : [
+                          const PopupMenuItem(value: 'report', child: Text('Report')),
+                        ],
+                ),
               ],
             ),
           ),
@@ -525,7 +553,7 @@ class _PostCardState extends State<PostCard> {
                     ),
                     const SizedBox(width: 24),
                     GestureDetector(
-                      onTap: (isOwner || isFull)
+                      onTap: (isOwner || (isFull && !isJoined))
                           ? null
                           : () => widget.postService.toggleJoin(widget.post.id),
                       child: Row(
@@ -565,7 +593,6 @@ class _PostCardState extends State<PostCard> {
                         ],
                       ),
                     ),
-
                     const SizedBox(width: 24),
                     GestureDetector(
                       onTap: () => showCommentsSheet(
