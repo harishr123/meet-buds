@@ -10,6 +10,8 @@ class PostModel {
   final String text;
   final List<String> imageUrls;
   final String? location;
+  final double? locationLat;
+  final double? locationLng;
   final DateTime timestamp;
   final List<String> likes;
   final List<String> joinedBy;
@@ -26,6 +28,8 @@ class PostModel {
     required this.text,
     required this.imageUrls,
     this.location,
+    this.locationLat,
+    this.locationLng,
     required this.timestamp,
     required this.likes,
     required this.joinedBy,
@@ -43,6 +47,9 @@ class PostModel {
     return ActivityStatus.ongoing;
   }
 
+  /// True if this post has real coordinates and can be plotted on the map.
+  bool get hasLocationPin => locationLat != null && locationLng != null;
+
   factory PostModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     return PostModel(
@@ -53,6 +60,8 @@ class PostModel {
       text: data['text'] ?? '',
       imageUrls: List<String>.from(data['imageUrls'] ?? []),
       location: data['location'],
+      locationLat: (data['locationLat'] as num?)?.toDouble(),
+      locationLng: (data['locationLng'] as num?)?.toDouble(),
       timestamp: (data['timestamp'] as Timestamp).toDate(),
       likes: List<String>.from(data['likes'] ?? []),
       joinedBy: List<String>.from(data['joinedBy'] ?? []),
@@ -75,6 +84,8 @@ class PostModel {
       'text': text,
       'imageUrls': imageUrls,
       'location': location,
+      'locationLat': locationLat,
+      'locationLng': locationLng,
       'timestamp': Timestamp.fromDate(timestamp),
       'likes': likes,
       'joinedBy': joinedBy,

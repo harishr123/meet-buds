@@ -83,11 +83,16 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 40),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        child: SingleChildScrollView(
+          padding: EdgeInsets.only(
+            left: 28,
+            right: 28,
+            top: 40,
+            bottom: 40 + MediaQuery.of(context).viewInsets.bottom,
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
               const SizedBox(height: 40),
               const Text('Welcome back',
                   style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700)),

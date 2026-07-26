@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'post_service.dart';
+import 'screens/location_picker_screen.dart';
 
 class CreatePostScreen extends StatefulWidget {
   const CreatePostScreen({super.key});
@@ -10,7 +11,6 @@ class CreatePostScreen extends StatefulWidget {
 
 class _CreatePostScreenState extends State<CreatePostScreen> {
   final _textController = TextEditingController();
-  final _locationController = TextEditingController();
   final _postService = PostService();
   bool _loading = false;
   String _selectedActivity = 'general';
@@ -18,6 +18,11 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   DateTime? _startTime;
   DateTime? _endTime;
   String _errorMessage = '';
+
+  // Location state — set via the map picker instead of free text.
+  String? _selectedLocationLabel;
+  double? _selectedLocationLat;
+  double? _selectedLocationLng;
 
   static const _activities = [
     {'type': 'gym', 'label': 'Gym', 'emoji': '🏋️'},
@@ -27,6 +32,21 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     {'type': 'hangout', 'label': 'Hangout', 'emoji': '☕'},
     {'type': 'general', 'label': 'Other', 'emoji': '📌'},
   ];
+
+  Future<void> _pickLocation() async {
+    final result = await Navigator.push<LocationPickResult>(
+      context,
+      MaterialPageRoute(builder: (_) => const LocationPickerScreen()),
+    );
+    if (result != null) {
+      setState(() {
+        _selectedLocationLabel = result.label;
+        _selectedLocationLat = result.lat;
+        _selectedLocationLng = result.lng;
+        _errorMessage = '';
+      });
+    }
+  }
 
   Future<void> _pickTime({required bool isStart}) async {
     final now = DateTime.now();
@@ -60,13 +80,12 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
   Future<void> _submit() async {
     final text = _textController.text.trim();
-    final location = _locationController.text.trim();
 
     if (text.isEmpty) {
       setState(() => _errorMessage = 'Please describe your activity.');
       return;
     }
-    if (location.isEmpty) {
+    if (_selectedLocationLabel == null) {
       setState(() => _errorMessage = 'Please add a location.');
       return;
     }
@@ -88,7 +107,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       await _postService.createPost(
         text: text,
         images: [],
-        location: location,
+        location: _selectedLocationLabel,
+        locationLat: _selectedLocationLat,
+        locationLng: _selectedLocationLng,
         activityType: _selectedActivity,
         maxParticipants: _maxParticipants,
         startTime: _startTime,
@@ -192,14 +213,31 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
             const SizedBox(height: 16),
 
-            TextField(
-              controller: _locationController,
-              decoration: const InputDecoration(
-                hintText: 'Location (required)',
-                prefixIcon: Icon(Icons.location_on_outlined),
-                border: OutlineInputBorder(),
+            OutlinedButton.icon(
+              onPressed: _pickLocation,
+              icon: Icon(
+                Icons.location_on_outlined,
+                color: _selectedLocationLabel == null
+                    ? Colors.grey
+                    : const Color(0xFF1D9E75),
               ),
-              onChanged: (_) => setState(() => _errorMessage = ''),
+              label: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  _selectedLocationLabel ?? 'Set location on map (required)',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: _selectedLocationLabel == null
+                        ? Colors.grey.shade600
+                        : const Color(0xFF1D9E75),
+                  ),
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 48),
+                alignment: Alignment.centerLeft,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+              ),
             ),
 
             const SizedBox(height: 16),

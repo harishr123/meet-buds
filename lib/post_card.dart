@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'post_model.dart';
 import 'post_service.dart';
 import 'screens/profile_screen.dart';
+import 'report_helper.dart';
 
 class PostCard extends StatefulWidget {
   final PostModel post;
@@ -304,56 +305,69 @@ class _PostCardState extends State<PostCard> {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             child: Row(
               children: [
-                // Tappable avatar + username
-                GestureDetector(
-                  onTap: _openProfile,
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.7),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Center(
-                          child: Text(
-                            username[0].toUpperCase(),
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: headerText,
+                // Tappable avatar + username — Flexible so long location
+                // names truncate instead of pushing the right side offscreen.
+                Flexible(
+                  child: GestureDetector(
+                    onTap: _openProfile,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.7),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Text(
+                              username[0].toUpperCase(),
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: headerText,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 10),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(username,
-                              style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: headerText)),
-                          if (widget.post.location != null)
-                            Row(
-                              children: [
-                                Icon(Icons.location_on,
-                                    size: 11, color: headerText.withValues(alpha: 0.7)),
-                                const SizedBox(width: 2),
-                                Text(widget.post.location!,
-                                    style: TextStyle(
-                                        fontSize: 11,
-                                        color: headerText.withValues(alpha: 0.7))),
-                              ],
-                            ),
-                        ],
-                      ),
-                    ],
+                        const SizedBox(width: 10),
+                        Flexible(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(username,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: headerText)),
+                              if (widget.post.location != null)
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.location_on,
+                                        size: 11, color: headerText.withValues(alpha: 0.7)),
+                                    const SizedBox(width: 2),
+                                    Flexible(
+                                      child: Text(widget.post.location!,
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                              fontSize: 11,
+                                              color: headerText.withValues(alpha: 0.7))),
+                                    ),
+                                  ],
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                const Spacer(),
+                const SizedBox(width: 8),
                 // Activity badge
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -362,6 +376,7 @@ class _PostCardState extends State<PostCard> {
                     borderRadius: BorderRadius.circular(99),
                   ),
                   child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(config['emoji'] as String,
                           style: const TextStyle(fontSize: 12)),
@@ -378,7 +393,7 @@ class _PostCardState extends State<PostCard> {
                 Text(_timeAgo(widget.post.timestamp),
                     style: TextStyle(
                         fontSize: 11, color: headerText.withValues(alpha: 0.7))),
-                if (isOwner)
+                        
                   PopupMenuButton<String>(
                     icon: Icon(Icons.more_horiz, size: 18, color: headerText),
                     onSelected: (val) {
@@ -386,12 +401,22 @@ class _PostCardState extends State<PostCard> {
                         _showEditDialog();
                       } else if (val == 'delete') {
                         widget.postService.deletePost(widget.post.id);
+                      } else if (val == 'report') {
+                        showReportDialog(
+                          context, 
+                          postId: widget.post.id, 
+                          reportedUserId: widget.post.userId
+                        );
                       }
                     },
-                    itemBuilder: (_) => [
-                      const PopupMenuItem(value: 'edit', child: Text('Edit')),
-                      const PopupMenuItem(value: 'delete', child: Text('Delete')),
-                    ],
+                    itemBuilder: (_) => isOwner
+                        ? [
+                            const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                            const PopupMenuItem(value: 'delete', child: Text('Delete'))
+                          ]
+                        : [
+                            const PopupMenuItem(value: 'report', child: Text('Report')),
+                          ],
                   ),
               ],
             ),

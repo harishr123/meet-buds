@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../feed_screen.dart';
 import 'profile_screen.dart';
 import '../create_post_screen.dart';
+import '../map_view_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,6 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final screens = [
       const FeedScreen(),
+      const MapViewScreen(),
       ProfileScreen(userId: uid),
     ];
 
@@ -30,7 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       floatingActionButton: _currentIndex == 0
           ? FloatingActionButton(
-            heroTag: 'home_fab',
+              heroTag: 'home_fab',
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const CreatePostScreen()),
@@ -46,6 +48,11 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: Icon(Icons.home_outlined),
             selectedIcon: Icon(Icons.home),
             label: 'Feed',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.map_outlined),
+            selectedIcon: Icon(Icons.map),
+            label: 'Map',
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline),
