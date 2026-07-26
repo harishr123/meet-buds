@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../feed_screen.dart';
 import 'profile_screen.dart';
 import '../create_post_screen.dart';
+import '../services/notification_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -13,6 +14,12 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    NotificationService.initialize();
+  }
 
   @override
   Widget build(BuildContext context) {
