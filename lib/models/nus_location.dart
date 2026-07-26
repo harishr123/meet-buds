@@ -7,27 +7,25 @@ class NUSLocation {
 
   const NUSLocation({required this.name, required this.lat, required this.lng});
 
-  // NOTE: these are APPROXIMATE starting coordinates based on general NUS
-  // Kent Ridge campus geography. Verify/adjust each by dropping a pin in
-  // Google Maps and copying the exact lat/lng before relying on these.
+  // Coordinates verified against Google Maps place data (July 2026).
   static const List<NUSLocation> all = [
-    NUSLocation(name: 'UTown Gym', lat: 1.3055, lng: 103.7737),
-    NUSLocation(name: 'UTown Green', lat: 1.3049, lng: 103.7730),
-    NUSLocation(name: 'Yusof Ishak House', lat: 1.3052, lng: 103.7734),
-    NUSLocation(name: 'UTown Flavours', lat: 1.3046, lng: 103.7726),
-    NUSLocation(name: 'UTown Fine Food', lat: 1.3044, lng: 103.7724),
-    NUSLocation(name: 'Central Library', lat: 1.2966, lng: 103.7731),
-    NUSLocation(name: 'The Deck (FASS)', lat: 1.2945, lng: 103.7737),
-    NUSLocation(name: 'Techno Edge (CDE)', lat: 1.3002, lng: 103.7708),
-    NUSLocation(name: 'Terrace (Computing)', lat: 1.2963, lng: 103.7744),
-    NUSLocation(name: 'COM1/COM2', lat: 1.2947, lng: 103.7737),
-    NUSLocation(name: 'University Sports Centre', lat: 1.2985, lng: 103.7761),
-    NUSLocation(name: 'MPSH', lat: 1.2990, lng: 103.7757),
-    NUSLocation(name: 'PGP Foodcourt', lat: 1.2913, lng: 103.7797),
-    NUSLocation(name: 'PGP', lat: 1.2909, lng: 103.7801),
-    NUSLocation(name: 'Kent Ridge Hall', lat: 1.2935, lng: 103.7810),
-    NUSLocation(name: 'RC4', lat: 1.3059, lng: 103.7715),
-    NUSLocation(name: 'University Cultural Centre', lat: 1.2975, lng: 103.7726),
+    NUSLocation(name: 'UTown Gym', lat: 1.3045, lng: 103.7725),
+    NUSLocation(name: 'UTown Green', lat: 1.3049, lng: 103.7732),
+    NUSLocation(name: 'Yusof Ishak House', lat: 1.2985, lng: 103.7749),
+    NUSLocation(name: 'UTown Flavours', lat: 1.3044, lng: 103.7730),
+    NUSLocation(name: 'UTown Fine Food', lat: 1.3040, lng: 103.7735),
+    NUSLocation(name: 'Central Library', lat: 1.2965, lng: 103.7731),
+    NUSLocation(name: 'The Deck (FASS)', lat: 1.2944, lng: 103.7726),
+    NUSLocation(name: 'Techno Edge (CDE)', lat: 1.2979, lng: 103.7717),
+    NUSLocation(name: 'Terrace (Computing)', lat: 1.2944, lng: 103.7743),
+    NUSLocation(name: 'COM1/COM2', lat: 1.2952, lng: 103.7738),
+    NUSLocation(name: 'University Sports Centre', lat: 1.2998, lng: 103.7755),
+    NUSLocation(name: 'MPSH', lat: 1.3008, lng: 103.7760),
+    NUSLocation(name: 'PGP Foodcourt', lat: 1.2913, lng: 103.7802),
+    NUSLocation(name: 'PGP', lat: 1.2904, lng: 103.7807),
+    NUSLocation(name: 'Kent Ridge Hall', lat: 1.2918, lng: 103.7748),
+    NUSLocation(name: 'RC4', lat: 1.3082, lng: 103.7734),
+    NUSLocation(name: 'University Cultural Centre', lat: 1.3016, lng: 103.7722),
   ];
 
   /// Finds the nearest predefined location to an arbitrary dropped pin
