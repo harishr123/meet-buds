@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'post_model.dart';
+import 'comment_model.dart';
 
 class PostService {
   final _db = FirebaseFirestore.instance;
@@ -119,6 +120,54 @@ class PostService {
         .orderBy('timestamp', descending: true)
         .snapshots()
         .map((snap) => snap.docs.map(PostModel.fromFirestore).toList());
+  }
+
+  Stream<List<CommentModel>> getComments(String postId) {
+    return _db
+        .collection('posts')
+        .doc(postId)
+        .collection('comments')
+        .orderBy('timestamp', descending: false)
+        .snapshots()
+        .map((snap) => snap.docs.map(CommentModel.fromFirestore).toList());
+  }
+
+Future<void> addComment(
+    String postId,
+    String text, {
+    String? replyToId,
+    String? replyToUsername,
+  }) async {
+    final user = _auth.currentUser!;
+    final postRef = _db.collection('posts').doc(postId);
+    final userDoc = await _db.collection('users').doc(user.uid).get();
+    final username = userDoc.data()?['username'] ?? user.email ?? 'Anonymous';
+    final avatar = userDoc.data()?['avatarUrl'];
+    final commentRef = postRef.collection('comments').doc();
+
+    await _db.runTransaction((tx) async {
+      tx.set(commentRef, CommentModel(
+        id: commentRef.id,
+        userId: user.uid,
+        username: username,
+        userAvatar: avatar,
+        text: text,
+        timestamp: DateTime.now(),
+        replyToId: replyToId,
+        replyToUsername: replyToUsername,
+      ).toMap());
+      tx.update(postRef, {'commentCount': FieldValue.increment(1)});
+    });
+  }
+
+  Future<void> deleteComment(String postId, String commentId) async {
+    final postRef = _db.collection('posts').doc(postId);
+    final commentRef = postRef.collection('comments').doc(commentId);
+
+    await _db.runTransaction((tx) async {
+      tx.delete(commentRef);
+      tx.update(postRef, {'commentCount': FieldValue.increment(-1)});
+    });
   }
 
   Stream<List<PostModel>> getJoinedActivities(String userId) {
