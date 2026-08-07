@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-Future<void> showReportDialog(BuildContext context, {
+Future<void> showReportDialog(
+  BuildContext context, {
   required String postId,
   required String reportedUserId,
 }) async {
@@ -20,12 +21,14 @@ Future<void> showReportDialog(BuildContext context, {
               'Spam',
               'Harassment',
               'Other',
-            ].map((r) => RadioListTile<String>(
-                  title: Text(r),
-                  value: r,
-                  groupValue: selected,
-                  onChanged: (v) => setState(() => selected = v!),
-                )).toList(),
+            ]
+                .map((r) => RadioListTile<String>(
+                      title: Text(r),
+                      value: r,
+                      groupValue: selected,
+                      onChanged: (v) => setState(() => selected = v!),
+                    ))
+                .toList(),
           ),
           actions: [
             TextButton(
@@ -44,17 +47,36 @@ Future<void> showReportDialog(BuildContext context, {
 
   if (reason == null || !context.mounted) return;
 
-  await FirebaseFirestore.instance.collection('reports').add({
-    'postId': postId,
-    'reportedUserId': reportedUserId,
-    'reporterId': FirebaseAuth.instance.currentUser?.uid,
-    'reason': reason,
-    'timestamp': FieldValue.serverTimestamp(),
-  });
+  final uid = FirebaseAuth.instance.currentUser!.uid;
 
-  if (context.mounted) {
+  try {
+    // Deterministic document id means one report per user per post. A repeat
+    // report targets an existing doc, which counts as an update — and only
+    // moderators may update reports — so Firestore rejects it for normal users.
+    await FirebaseFirestore.instance
+        .collection('reports')
+        .doc('${postId}_$uid')
+        .set({
+      'postId': postId,
+      'reportedUserId': reportedUserId,
+      'reporterId': uid,
+      'reason': reason,
+      'status': 'pending',
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+
+    if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Post reported. Thanks for flagging this.')),
+    );
+  } on FirebaseException catch (e) {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(e.code == 'permission-denied'
+            ? 'You have already reported this post.'
+            : 'Could not submit report. Please try again.'),
+      ),
     );
   }
 }
