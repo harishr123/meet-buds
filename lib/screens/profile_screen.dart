@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../post_model.dart';
 import '../post_service.dart';
 import '../post_card.dart';
 import '../services/auth_service.dart';
 import '../services/notification_service.dart';
 import 'login_screen.dart';
+import 'moderation_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String userId;
@@ -37,6 +39,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   Future<void> _loadProfile() async {
     final data = await _postService.getUserProfile(widget.userId);
+    if (!mounted) return;
     setState(() {
       _profile = data;
       _bioController.text = data?['bio'] ?? '';
@@ -46,10 +49,48 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   Future<void> _saveBio() async {
     await _postService.updateBio(_bioController.text.trim());
+    if (!mounted) return;
     setState(() {
       _profile?['bio'] = _bioController.text.trim();
       _editingBio = false;
     });
+  }
+
+  Future<void> _logOut() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Log out?'),
+        content: const Text(
+            'You will need to sign in again to post or join activities.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Log out'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    await NotificationService.clearToken();
+
+    // Clear the stay-signed-in choice so the next launch starts clean.
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('remember_me');
+
+    await AuthService().signOut();
+
+    if (!context.mounted) return;
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
   }
 
   Color _avatarColor(String username) {
@@ -87,26 +128,30 @@ class _ProfileScreenState extends State<ProfileScreen>
         title: Text(username,
             style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
         centerTitle: true,
-        actions : _isOwnProfile
+        actions: _isOwnProfile
             ? [
+                FutureBuilder<bool>(
+                  future: isCurrentUserModerator(),
+                  builder: (context, snap) => snap.data == true
+                      ? IconButton(
+                          icon: const Icon(Icons.shield_outlined),
+                          tooltip: 'Moderation',
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const ModerationScreen()),
+                          ),
+                        )
+                      : const SizedBox.shrink(),
+                ),
                 IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await NotificationService.clearToken();
-              await AuthService().signOut();
-              if (mounted) {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                  (route) => false,
-                );
-              }
-            },
-          ),
-        ]
+                  icon: const Icon(Icons.logout),
+                  tooltip: 'Log out',
+                  onPressed: _logOut,
+                ),
+              ]
             : null,
       ),
-      
       body: _loadingProfile
           ? const Center(child: CircularProgressIndicator())
           : Column(
@@ -173,19 +218,21 @@ class _ProfileScreenState extends State<ProfileScreen>
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text(
-                                bio.isEmpty
-                                    ? (_isOwnProfile
-                                        ? 'Tap to add a bio...'
-                                        : '')
-                                    : bio,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: bio.isEmpty
-                                      ? Colors.grey.shade400
-                                      : Colors.grey.shade700,
+                              Flexible(
+                                child: Text(
+                                  bio.isEmpty
+                                      ? (_isOwnProfile
+                                          ? 'Tap to add a bio...'
+                                          : '')
+                                      : bio,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: bio.isEmpty
+                                        ? Colors.grey.shade400
+                                        : Colors.grey.shade700,
+                                  ),
+                                  textAlign: TextAlign.center,
                                 ),
-                                textAlign: TextAlign.center,
                               ),
                               if (_isOwnProfile) ...[
                                 const SizedBox(width: 6),
@@ -230,8 +277,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                           if (posts.isEmpty) {
                             return Center(
                               child: Text('No posts yet',
-                                  style: TextStyle(
-                                      color: Colors.grey.shade400)),
+                                  style:
+                                      TextStyle(color: Colors.grey.shade400)),
                             );
                           }
                           return ListView.builder(
@@ -259,8 +306,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                           if (posts.isEmpty) {
                             return Center(
                               child: Text('No joined activities yet',
-                                  style: TextStyle(
-                                      color: Colors.grey.shade400)),
+                                  style:
+                                      TextStyle(color: Colors.grey.shade400)),
                             );
                           }
                           return ListView.builder(

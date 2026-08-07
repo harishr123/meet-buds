@@ -1,0 +1,126 @@
+rules_version = '2';
+
+// ---------------------------------------------------------------------------
+// Meeting Buddies — Firestore security rules
+//
+// Collections in use (verified against lib/): posts, users, reports, and
+// comments as a subcollection of posts. Cloud Functions use the Admin SDK and
+// bypass these rules entirely, so notifyOnJoin / notifyOnComment are unaffected.
+//
+// Note on the old catch-all: rules are OR'd together, so leaving
+//   match /{document=**} { allow read, write: if request.auth != null; }
+// in place would re-grant everything and make the moderator checks cosmetic.
+// It is deliberately absent.
+// ---------------------------------------------------------------------------
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // Reads the caller's user doc — one extra document read per evaluation,
+    // so it is only called on paths that actually need it.
+    function isModerator() {
+      return signedIn()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid))
+             .data.isModerator == true;
+    }
+
+    function changed(fields) {
+      return request.resource.data.diff(resource.data)
+        .affectedKeys().hasAny(fields);
+    }
+
+    function changedOnly(fields) {
+      return request.resource.data.diff(resource.data)
+        .affectedKeys().hasOnly(fields);
+    }
+
+    // -----------------------------------------------------------------------
+    // users
+    //
+    // You may only write your own doc, and never your own isModerator flag —
+    // otherwise any signed-in user could promote themselves and the whole
+    // moderation scheme collapses. fcmToken and bio are ordinary self-writes.
+    // -----------------------------------------------------------------------
+    match /users/{uid} {
+      allow read: if signedIn();
+
+      allow create: if signedIn()
+                    && request.auth.uid == uid
+                    && !('isModerator' in request.resource.data.keys());
+
+      allow update: if signedIn()
+                    && request.auth.uid == uid
+                    && !changed(['isModerator']);
+
+      allow delete: if false;
+    }
+
+    // -----------------------------------------------------------------------
+    // posts
+    //
+    // The update rule has two arms. The author may edit their own post. Anyone
+    // signed in may change ONLY the social counters — that is how liking,
+    // joining and comment counts work, and they are written by other users.
+    // Removing that second arm breaks joins, and silently kills the join
+    // notification with them.
+    //
+    // Moderators may delete any post; authors may delete their own.
+    // -----------------------------------------------------------------------
+    match /posts/{postId} {
+      allow read: if signedIn();
+
+      allow create: if signedIn()
+                    && request.resource.data.userId == request.auth.uid;
+
+      allow update: if signedIn()
+                    && (resource.data.userId == request.auth.uid
+                        || changedOnly(['likes', 'joinedBy', 'commentCount']));
+
+      allow delete: if signedIn()
+                    && (resource.data.userId == request.auth.uid
+                        || isModerator());
+    }
+
+    // Comments keep the previous permissive behaviour so nothing in the
+    // existing flat/@mention comment flow breaks. Worth tightening later to
+    // author-or-moderator on delete.
+    //
+    // Note: deleting a post does NOT cascade to its comments subcollection —
+    // Firestore has no cascade. Orphaned comment docs are invisible in the UI
+    // (they are only ever queried through their parent post) but they do
+    // remain in the database.
+    match /posts/{postId}/comments/{commentId} {
+      allow read, write: if signedIn();
+    }
+
+    // -----------------------------------------------------------------------
+    // reports
+    //
+    // Only moderators can read the queue — reporter identity should not be
+    // visible to every signed-in user, which it currently is. Anyone may file
+    // a report, but only under their own uid and only as pending. Only
+    // moderators can resolve one. Nobody deletes: resolved reports are the
+    // audit trail.
+    // -----------------------------------------------------------------------
+    match /reports/{reportId} {
+      allow read: if isModerator();
+
+      allow create: if signedIn()
+                    && request.resource.data.reporterId == request.auth.uid
+                    && request.resource.data.status == 'pending';
+
+      // When you add report dedup with a deterministic doc id, append this to
+      // the create condition to enforce one-report-per-user-per-post in rules
+      // as well as in the client:
+      //
+      //   && reportId == request.resource.data.postId + '_' + request.auth.uid
+
+      allow update: if isModerator();
+      allow delete: if false;
+    }
+  }
+}
