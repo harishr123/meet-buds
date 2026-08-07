@@ -29,10 +29,28 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
   late LatLng _pinPosition;
   GoogleMapController? _mapController;
 
+  final _searchCtrl = TextEditingController();
+  String _query = '';
+
   @override
   void initState() {
     super.initState();
     _pinPosition = widget.initialPosition ?? _defaultCenter;
+  }
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  /// Named campus locations matching the current search text.
+  List<NUSLocation> get _results {
+    if (_query.trim().isEmpty) return const [];
+    final q = _query.trim().toLowerCase();
+    return NUSLocation.all
+        .where((l) => l.name.toLowerCase().contains(q))
+        .toList();
   }
 
   void _updatePin(LatLng position) {
@@ -41,9 +59,27 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     });
   }
 
+  void _clearSearch() {
+    _searchCtrl.clear();
+    setState(() => _query = '');
+  }
+
+  /// Jump the pin and the camera to a searched location.
+  void _selectLocation(NUSLocation loc) {
+    final target = LatLng(loc.lat, loc.lng);
+    _searchCtrl.clear();
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _query = '';
+      _pinPosition = target;
+    });
+    _mapController?.animateCamera(CameraUpdate.newLatLngZoom(target, 17));
+  }
+
   @override
   Widget build(BuildContext context) {
-    final nearest = NUSLocation.nearestTo(_pinPosition.latitude, _pinPosition.longitude);
+    final nearest =
+        NUSLocation.nearestTo(_pinPosition.latitude, _pinPosition.longitude);
 
     return Scaffold(
       appBar: AppBar(
@@ -52,24 +88,129 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
       body: Column(
         children: [
           Expanded(
-            child: GoogleMap(
-              initialCameraPosition: CameraPosition(
-                target: widget.initialPosition ?? _defaultCenter,
-                zoom: 16,
-              ),
-              onMapCreated: (controller) => _mapController = controller,
-              onTap: _updatePin,
-              markers: {
-                Marker(
-                  markerId: const MarkerId('activity-pin'),
-                  position: _pinPosition,
-                  draggable: true,
-                  onDragEnd: _updatePin,
-                  icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+            child: Stack(
+              children: [
+                GoogleMap(
+                  initialCameraPosition: CameraPosition(
+                    target: widget.initialPosition ?? _defaultCenter,
+                    zoom: 16,
+                  ),
+                  onMapCreated: (controller) => _mapController = controller,
+                  onTap: (pos) {
+                    // Tapping the map is an explicit choice, so drop any
+                    // in-progress search rather than leaving results open.
+                    FocusScope.of(context).unfocus();
+                    _clearSearch();
+                    _updatePin(pos);
+                  },
+                  markers: {
+                    Marker(
+                      markerId: const MarkerId('activity-pin'),
+                      position: _pinPosition,
+                      draggable: true,
+                      onDragEnd: _updatePin,
+                      icon: BitmapDescriptor.defaultMarkerWithHue(
+                          BitmapDescriptor.hueRed),
+                    ),
+                  },
                 ),
-              },
+
+                // Floating search field and results list.
+                Positioned(
+                  top: 12,
+                  left: 12,
+                  right: 12,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Material(
+                        elevation: 3,
+                        borderRadius: BorderRadius.circular(12),
+                        child: TextField(
+                          controller: _searchCtrl,
+                          textInputAction: TextInputAction.search,
+                          onChanged: (v) => setState(() => _query = v),
+                          decoration: InputDecoration(
+                            hintText: 'Search for a place on campus',
+                            hintStyle: TextStyle(
+                                fontSize: 14, color: Colors.grey.shade400),
+                            prefixIcon: Icon(Icons.search,
+                                size: 20, color: Colors.grey.shade400),
+                            suffixIcon: _query.isEmpty
+                                ? null
+                                : IconButton(
+                                    icon: Icon(Icons.clear,
+                                        size: 18, color: Colors.grey.shade400),
+                                    onPressed: _clearSearch,
+                                  ),
+                            filled: true,
+                            fillColor: Colors.white,
+                            contentPadding:
+                                const EdgeInsets.symmetric(vertical: 12),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      if (_query.trim().isNotEmpty)
+                        Container(
+                          margin: const EdgeInsets.only(top: 6),
+                          constraints: const BoxConstraints(maxHeight: 260),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.12),
+                                blurRadius: 10,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: _results.isEmpty
+                              ? Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 14),
+                                  child: Text(
+                                    'No campus locations match that. '
+                                    'You can still tap or drag the pin.',
+                                    style: TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.grey.shade500),
+                                  ),
+                                )
+                              : ListView.separated(
+                                  shrinkWrap: true,
+                                  padding: EdgeInsets.zero,
+                                  itemCount: _results.length,
+                                  separatorBuilder: (_, __) => Divider(
+                                    height: 1,
+                                    color: Colors.grey.shade200,
+                                  ),
+                                  itemBuilder: (_, i) {
+                                    final loc = _results[i];
+                                    return ListTile(
+                                      dense: true,
+                                      leading: Icon(Icons.place_outlined,
+                                          size: 20,
+                                          color: Colors.grey.shade500),
+                                      title: Text(loc.name,
+                                          style: const TextStyle(fontSize: 14)),
+                                      onTap: () => _selectLocation(loc),
+                                    );
+                                  },
+                                ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
+
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -92,14 +233,16 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                     Expanded(
                       child: Text(
                         'Nearest: ${nearest.name}',
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Tap or drag the pin to set the exact spot',
+                  'Search, tap or drag the pin to set the exact spot',
                   style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
                 ),
                 const SizedBox(height: 16),

@@ -19,12 +19,43 @@ class _MapViewScreenState extends State<MapViewScreen> {
   final _postService = PostService();
   final Map<String, BitmapDescriptor> _iconCache = {};
 
+  bool _mapFailed = false;
+  bool _mapReady = false;
+
+  /// Marker styling per activity type. Colours match the category badge
+  /// colours used on the post cards so the map and feed stay consistent.
   static const Map<String, (IconData, Color)> _categoryStyle = {
-    'football': (Icons.sports_soccer, Color(0xFF639922)),
-    'study':    (Icons.menu_book, Color(0xFF378ADD)),
-    'food':     (Icons.restaurant, Color(0xFFEF9F27)),
-    'general':  (Icons.groups, Color(0xFF5F5E5A)),
+    'gym':     (Icons.fitness_center, Color(0xFF0F6E56)),
+    'food':    (Icons.restaurant,     Color(0xFFD85A30)),
+    'study':   (Icons.menu_book,      Color(0xFF185FA5)),
+    'sports':  (Icons.sports_soccer,  Color(0xFF639922)),
+    'hangout': (Icons.local_cafe,     Color(0xFFBA7517)),
+    'general': (Icons.push_pin,       Color(0xFF534AB7)),
   };
+
+  @override
+  void initState() {
+    super.initState();
+    _startMapTimeout();
+  }
+
+  /// If onMapCreated never fires, the maps SDK failed to initialise
+  /// (no network, bad key, plugin not registered). Show a fallback.
+  void _startMapTimeout() {
+    Future.delayed(const Duration(seconds: 8), () {
+      if (mounted && !_mapReady) {
+        setState(() => _mapFailed = true);
+      }
+    });
+  }
+
+  void _retryMap() {
+    setState(() {
+      _mapFailed = false;
+      _mapReady = false;
+    });
+    _startMapTimeout();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +68,13 @@ class _MapViewScreenState extends State<MapViewScreen> {
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return Center(child: Text('Error loading map: ${snapshot.error}'));
+            return _errorState(
+              icon: Icons.cloud_off,
+              title: 'Could not load activities',
+              message:
+                  'Something went wrong fetching activities. Check your connection and try again.',
+              onRetry: () => setState(() {}),
+            );
           }
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
@@ -57,18 +94,66 @@ class _MapViewScreenState extends State<MapViewScreen> {
             grouped.putIfAbsent(key, () => []).add(post);
           }
 
+          if (_mapFailed) {
+            return _errorState(
+              icon: Icons.map_outlined,
+              title: 'Map unavailable',
+              message:
+                  'We could not load the campus map. Check your connection and try again.',
+              onRetry: _retryMap,
+              showFeedHint: true,
+            );
+          }
+
           return FutureBuilder<Set<Marker>>(
             future: _buildMarkers(grouped),
             builder: (context, markerSnapshot) {
               if (!markerSnapshot.hasData) {
                 return const Center(child: CircularProgressIndicator());
               }
-              return GoogleMap(
-                initialCameraPosition: const CameraPosition(
-                  target: _campusCenter,
-                  zoom: 15.5,
-                ),
-                markers: markerSnapshot.data!,
+              return Stack(
+                children: [
+                  GoogleMap(
+                    initialCameraPosition: const CameraPosition(
+                      target: _campusCenter,
+                      zoom: 15.5,
+                    ),
+                    markers: markerSnapshot.data!,
+                    onMapCreated: (_) {
+                      if (mounted && !_mapReady) {
+                        setState(() => _mapReady = true);
+                      }
+                    },
+                  ),
+                  if (posts.isEmpty)
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 24,
+                      child: Center(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(99),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.12),
+                                blurRadius: 10,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            'No activities on the map right now',
+                            style: TextStyle(
+                                fontSize: 13, color: Colors.grey.shade600),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               );
             },
           );
@@ -77,7 +162,61 @@ class _MapViewScreenState extends State<MapViewScreen> {
     );
   }
 
-  Future<Set<Marker>> _buildMarkers(Map<String, List<PostModel>> grouped) async {
+  Widget _errorState({
+    required IconData icon,
+    required String title,
+    required String message,
+    required VoidCallback onRetry,
+    bool showFeedHint = false,
+  }) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 52, color: Colors.grey.shade300),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade700,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13.5,
+                color: Colors.grey.shade500,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 20),
+            OutlinedButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh, size: 18),
+              label: const Text('Try again'),
+            ),
+            if (showFeedHint) ...[
+              const SizedBox(height: 6),
+              Text(
+                'You can still browse activities from the Feed tab.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 12.5, color: Colors.grey.shade400),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<Set<Marker>> _buildMarkers(
+      Map<String, List<PostModel>> grouped) async {
     final markers = <Marker>{};
     for (final entry in grouped.entries) {
       final group = entry.value;
@@ -92,7 +231,9 @@ class _MapViewScreenState extends State<MapViewScreen> {
           if (group.length == 1) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => PostDetailScreen(post: group.first)),
+              MaterialPageRoute(
+                builder: (_) => PostDetailScreen(post: group.first),
+              ),
             );
           } else {
             _showLocationSheet(context, group);
@@ -109,7 +250,11 @@ class _MapViewScreenState extends State<MapViewScreen> {
     if (cached != null) return cached;
 
     final style = _categoryStyle[category] ?? _categoryStyle['general']!;
-    final built = await _buildMarkerBitmap(icon: style.$1, color: style.$2, count: count);
+    final built = await _buildMarkerBitmap(
+      icon: style.$1,
+      color: style.$2,
+      count: count,
+    );
     _iconCache[key] = built;
     return built;
   }
@@ -148,8 +293,10 @@ class _MapViewScreenState extends State<MapViewScreen> {
 
     if (count > 1) {
       final badgeCenter = Offset(size - 8 * pixelRatio, 8 * pixelRatio);
-      canvas.drawCircle(badgeCenter, 9 * pixelRatio, Paint()..color = Colors.white);
-      canvas.drawCircle(badgeCenter, 8 * pixelRatio, Paint()..color = const Color(0xFFD85A30));
+      canvas.drawCircle(
+          badgeCenter, 9 * pixelRatio, Paint()..color = Colors.white);
+      canvas.drawCircle(badgeCenter, 8 * pixelRatio,
+          Paint()..color = const Color(0xFFD85A30));
       final countPainter = TextPainter(
         text: TextSpan(
           text: '$count',
@@ -167,9 +314,13 @@ class _MapViewScreenState extends State<MapViewScreen> {
       );
     }
 
-    final img = await recorder.endRecording().toImage(size.ceil(), size.ceil());
+    final img =
+        await recorder.endRecording().toImage(size.ceil(), size.ceil());
     final bytes = await img.toByteData(format: ui.ImageByteFormat.png);
-    return BitmapDescriptor.bytes(bytes!.buffer.asUint8List(), imagePixelRatio: pixelRatio);
+    return BitmapDescriptor.bytes(
+      bytes!.buffer.asUint8List(),
+      imagePixelRatio: pixelRatio,
+    );
   }
 
   void _showLocationSheet(BuildContext context, List<PostModel> group) {

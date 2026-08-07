@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'firebase_options.dart';
-import 'screens/login_screen.dart';
+import 'screens/splash_screen.dart';
 
 // Must be a top-level function. Handles notifications that arrive while
 // the app is fully backgrounded or terminated.
@@ -26,8 +26,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      title: 'Meet Buddies',
-      home: LoginScreen(),
+      title: 'Meeting Buddies',
+      home: SplashScreen(),
     );
   }
 }

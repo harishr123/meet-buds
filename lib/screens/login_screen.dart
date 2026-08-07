@@ -1,13 +1,10 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/auth_service.dart';
 import 'signup_screen.dart';
 import 'home_screen.dart';
 import 'verify_email_screen.dart';
-
-// DEV ONLY — set to false before Orbital submission
-const bool kSkipEmailVerification = false;
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -22,6 +19,29 @@ class _LoginScreenState extends State<LoginScreen> {
   final authService = AuthService();
   bool isLoading = false;
   String errorMessage = '';
+  bool _obscurePassword = true;
+  bool _rememberMe = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRememberPreference();
+  }
+
+  /// Restore the user's previous choice so the box reflects what they picked
+  /// last time rather than resetting on every visit.
+  Future<void> _loadRememberPreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    setState(() => _rememberMe = prefs.getBool('remember_me') ?? true);
+  }
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
 
   String _friendlyError(dynamic e) {
     if (e is FirebaseAuthException) {
@@ -54,34 +74,45 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     } catch (e) {
-      setState(() => errorMessage = 'Could not send reset email. Check your email address.');
+      setState(() =>
+          errorMessage = 'Could not send reset email. Check your email address.');
     }
   }
 
   void login() async {
-    final email = emailController.text.trim();
-  if (!email.endsWith('@u.nus.edu')) {
-    setState(() => errorMessage = 'Please use your NUS email (@u.nus.edu).');
-    return;
-  }
-    setState(() { isLoading = true; errorMessage = ''; });
+    setState(() {
+      isLoading = true;
+      errorMessage = '';
+    });
     try {
-      await authService.login(emailController.text.trim(), passwordController.text);
+      await authService.login(
+          emailController.text.trim(), passwordController.text);
+
+      // Persist the choice so the splash screen knows whether to keep
+      // this session alive on the next cold start.
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('remember_me', _rememberMe);
+
       final user = FirebaseAuth.instance.currentUser;
       await user?.reload();
       if (!mounted) return;
-      if (user != null && !user.emailVerified && !kSkipEmailVerification) {
-        // Not verified — send to verify screen
+      if (user != null && !user.emailVerified) {
         Navigator.pushReplacement(context,
             MaterialPageRoute(builder: (_) => const VerifyEmailScreen()));
       } else {
-        Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (_) => const HomeScreen()));
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (_) => const HomeScreen()));
       }
     } catch (e) {
-      setState(() { errorMessage = _friendlyError(e); });
+      setState(() {
+        errorMessage = _friendlyError(e);
+      });
     }
-    if (mounted) setState(() { isLoading = false; });
+    if (mounted) {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   @override
@@ -95,10 +126,10 @@ class _LoginScreenState extends State<LoginScreen> {
             right: 28,
             top: 40,
             bottom: 40 + MediaQuery.of(context).viewInsets.bottom,
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               const SizedBox(height: 40),
               const Text('Welcome back',
                   style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700)),
@@ -109,6 +140,7 @@ class _LoginScreenState extends State<LoginScreen> {
               TextField(
                 controller: emailController,
                 keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.next,
                 decoration: const InputDecoration(
                   labelText: 'Email',
                   border: OutlineInputBorder(),
@@ -118,36 +150,89 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 16),
               TextField(
                 controller: passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(
+                obscureText: _obscurePassword,
+                decoration: InputDecoration(
                   labelText: 'Password',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.lock_outlined),
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.lock_outlined),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePassword
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                      size: 20,
+                      color: Colors.grey.shade500,
+                    ),
+                    tooltip: _obscurePassword ? 'Show password' : 'Hide password',
+                    onPressed: () =>
+                        setState(() => _obscurePassword = !_obscurePassword),
+                  ),
                 ),
                 onSubmitted: (_) => login(),
               ),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: _forgotPassword,
-                  child: Text('Forgot password?',
-                      style: TextStyle(fontSize: 13, color: Colors.grey.shade600)),
-                ),
+              const SizedBox(height: 4),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Flexible(
+                    child: InkWell(
+                      onTap: () => setState(() => _rememberMe = !_rememberMe),
+                      borderRadius: BorderRadius.circular(6),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: Checkbox(
+                                value: _rememberMe,
+                                onChanged: (v) =>
+                                    setState(() => _rememberMe = v ?? true),
+                                materialTapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Flexible(
+                              child: Text(
+                                'Keep me signed in',
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                    fontSize: 13, color: Colors.grey.shade600),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: _forgotPassword,
+                    child: Text('Forgot password?',
+                        style: TextStyle(
+                            fontSize: 13, color: Colors.grey.shade600)),
+                  ),
+                ],
               ),
               if (errorMessage.isNotEmpty)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFCEBEB),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline, size: 16, color: Color(0xFFA32D2D)),
+                      const Icon(Icons.error_outline,
+                          size: 16, color: Color(0xFFA32D2D)),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(errorMessage,
-                            style: const TextStyle(color: Color(0xFFA32D2D), fontSize: 13)),
+                            style: const TextStyle(
+                                color: Color(0xFFA32D2D), fontSize: 13)),
                       ),
                     ],
                   ),
@@ -165,7 +250,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               borderRadius: BorderRadius.circular(10)),
                         ),
                         child: const Text('Sign in',
-                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                            style: TextStyle(
+                                fontSize: 15, fontWeight: FontWeight.w600)),
                       ),
               ),
               const SizedBox(height: 16),
