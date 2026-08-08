@@ -87,127 +87,126 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
       ),
       body: Column(
         children: [
-          Expanded(
-            child: Stack(
+          // Search field sits ABOVE the map rather than floating over it.
+          // On web the GoogleMap is an HTML platform view that swallows
+          // pointer events from any Flutter widget drawn on top of it —
+          // pointer_interceptor works around this in Chrome but not in
+          // Safari. Keeping the field outside the Stack sidesteps the
+          // problem entirely, on every browser.
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                GoogleMap(
-                  initialCameraPosition: CameraPosition(
-                    target: widget.initialPosition ?? _defaultCenter,
-                    zoom: 16,
-                  ),
-                  onMapCreated: (controller) => _mapController = controller,
-                  onTap: (pos) {
-                    // Tapping the map is an explicit choice, so drop any
-                    // in-progress search rather than leaving results open.
-                    FocusScope.of(context).unfocus();
-                    _clearSearch();
-                    _updatePin(pos);
-                  },
-                  markers: {
-                    Marker(
-                      markerId: const MarkerId('activity-pin'),
-                      position: _pinPosition,
-                      draggable: true,
-                      onDragEnd: _updatePin,
-                      icon: BitmapDescriptor.defaultMarkerWithHue(
-                          BitmapDescriptor.hueRed),
-                    ),
-                  },
-                ),
-
-                // Floating search field and results list.
-                Positioned(
-                  top: 12,
-                  left: 12,
-                  right: 12,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Material(
-                        elevation: 3,
-                        borderRadius: BorderRadius.circular(12),
-                        child: TextField(
-                          controller: _searchCtrl,
-                          textInputAction: TextInputAction.search,
-                          onChanged: (v) => setState(() => _query = v),
-                          decoration: InputDecoration(
-                            hintText: 'Search for a place on campus',
-                            hintStyle: TextStyle(
-                                fontSize: 14, color: Colors.grey.shade400),
-                            prefixIcon: Icon(Icons.search,
-                                size: 20, color: Colors.grey.shade400),
-                            suffixIcon: _query.isEmpty
-                                ? null
-                                : IconButton(
-                                    icon: Icon(Icons.clear,
-                                        size: 18, color: Colors.grey.shade400),
-                                    onPressed: _clearSearch,
-                                  ),
-                            filled: true,
-                            fillColor: Colors.white,
-                            contentPadding:
-                                const EdgeInsets.symmetric(vertical: 12),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
+                Material(
+                  elevation: 3,
+                  borderRadius: BorderRadius.circular(12),
+                  child: TextField(
+                    controller: _searchCtrl,
+                    textInputAction: TextInputAction.search,
+                    onChanged: (v) => setState(() => _query = v),
+                    decoration: InputDecoration(
+                      hintText: 'Search for a place on campus',
+                      hintStyle: TextStyle(
+                          fontSize: 14, color: Colors.grey.shade400),
+                      prefixIcon: Icon(Icons.search,
+                          size: 20, color: Colors.grey.shade400),
+                      suffixIcon: _query.isEmpty
+                          ? null
+                          : IconButton(
+                              icon: Icon(Icons.clear,
+                                  size: 18, color: Colors.grey.shade400),
+                              onPressed: _clearSearch,
                             ),
-                          ),
-                        ),
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding:
+                          const EdgeInsets.symmetric(vertical: 12),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
                       ),
-
-                      if (_query.trim().isNotEmpty)
-                        Container(
-                          margin: const EdgeInsets.only(top: 6),
-                          constraints: const BoxConstraints(maxHeight: 260),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.12),
-                                blurRadius: 10,
-                                offset: const Offset(0, 3),
-                              ),
-                            ],
-                          ),
-                          child: _results.isEmpty
-                              ? Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 14),
-                                  child: Text(
-                                    'No campus locations match that. '
-                                    'You can still tap or drag the pin.',
-                                    style: TextStyle(
-                                        fontSize: 13,
-                                        color: Colors.grey.shade500),
-                                  ),
-                                )
-                              : ListView.separated(
-                                  shrinkWrap: true,
-                                  padding: EdgeInsets.zero,
-                                  itemCount: _results.length,
-                                  separatorBuilder: (_, __) => Divider(
-                                    height: 1,
-                                    color: Colors.grey.shade200,
-                                  ),
-                                  itemBuilder: (_, i) {
-                                    final loc = _results[i];
-                                    return ListTile(
-                                      dense: true,
-                                      leading: Icon(Icons.place_outlined,
-                                          size: 20,
-                                          color: Colors.grey.shade500),
-                                      title: Text(loc.name,
-                                          style: const TextStyle(fontSize: 14)),
-                                      onTap: () => _selectLocation(loc),
-                                    );
-                                  },
-                                ),
-                        ),
-                    ],
+                    ),
                   ),
                 ),
+
+                if (_query.trim().isNotEmpty)
+                  Container(
+                    margin: const EdgeInsets.only(top: 6),
+                    constraints: const BoxConstraints(maxHeight: 220),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.12),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: _results.isEmpty
+                        ? Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 14),
+                            child: Text(
+                              'No campus locations match that. '
+                              'You can still tap or drag the pin.',
+                              style: TextStyle(
+                                  fontSize: 13, color: Colors.grey.shade500),
+                            ),
+                          )
+                        : ListView.separated(
+                            shrinkWrap: true,
+                            padding: EdgeInsets.zero,
+                            itemCount: _results.length,
+                            separatorBuilder: (context, index) => Divider(
+                              height: 1,
+                              color: Colors.grey.shade200,
+                            ),
+                            itemBuilder: (context, i) {
+                              final loc = _results[i];
+                              return ListTile(
+                                dense: true,
+                                leading: Icon(Icons.place_outlined,
+                                    size: 20, color: Colors.grey.shade500),
+                                title: Text(loc.name,
+                                    style: const TextStyle(fontSize: 14)),
+                                onTap: () => _selectLocation(loc),
+                              );
+                            },
+                          ),
+                  ),
               ],
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          Expanded(
+            child: GoogleMap(
+              initialCameraPosition: CameraPosition(
+                target: widget.initialPosition ?? _defaultCenter,
+                zoom: 16,
+              ),
+              onMapCreated: (controller) => _mapController = controller,
+              onTap: (pos) {
+                // Tapping the map is an explicit choice, so drop any
+                // in-progress search rather than leaving results open.
+                FocusScope.of(context).unfocus();
+                _clearSearch();
+                _updatePin(pos);
+              },
+              markers: {
+                Marker(
+                  markerId: const MarkerId('activity-pin'),
+                  position: _pinPosition,
+                  draggable: true,
+                  onDragEnd: _updatePin,
+                  icon: BitmapDescriptor.defaultMarkerWithHue(
+                      BitmapDescriptor.hueRed),
+                ),
+              },
             ),
           ),
 
