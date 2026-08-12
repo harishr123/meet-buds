@@ -25,12 +25,12 @@ class _MapViewScreenState extends State<MapViewScreen> {
   /// Marker styling per activity type. Colours match the category badge
   /// colours used on the post cards so the map and feed stay consistent.
   static const Map<String, (IconData, Color)> _categoryStyle = {
-    'gym':     (Icons.fitness_center, Color(0xFF0F6E56)),
-    'food':    (Icons.restaurant,     Color(0xFFD85A30)),
-    'study':   (Icons.menu_book,      Color(0xFF185FA5)),
-    'sports':  (Icons.sports_soccer,  Color(0xFF639922)),
-    'hangout': (Icons.local_cafe,     Color(0xFFBA7517)),
-    'general': (Icons.push_pin,       Color(0xFF534AB7)),
+    'gym': (Icons.fitness_center, Color(0xFF0F6E56)),
+    'food': (Icons.restaurant, Color(0xFFD85A30)),
+    'study': (Icons.menu_book, Color(0xFF185FA5)),
+    'sports': (Icons.sports_soccer, Color(0xFF639922)),
+    'hangout': (Icons.local_cafe, Color(0xFFBA7517)),
+    'general': (Icons.push_pin, Color(0xFF534AB7)),
   };
 
   @override
@@ -133,7 +133,9 @@ class _MapViewScreenState extends State<MapViewScreen> {
                       child: Center(
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 10),
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(99),
@@ -148,7 +150,9 @@ class _MapViewScreenState extends State<MapViewScreen> {
                           child: Text(
                             'No activities on the map right now',
                             style: TextStyle(
-                                fontSize: 13, color: Colors.grey.shade600),
+                              fontSize: 13,
+                              color: Colors.grey.shade600,
+                            ),
                           ),
                         ),
                       ),
@@ -216,30 +220,33 @@ class _MapViewScreenState extends State<MapViewScreen> {
   }
 
   Future<Set<Marker>> _buildMarkers(
-      Map<String, List<PostModel>> grouped) async {
+    Map<String, List<PostModel>> grouped,
+  ) async {
     final markers = <Marker>{};
     for (final entry in grouped.entries) {
       final group = entry.value;
       final first = group.first;
       final icon = await _iconFor(first.activityType, group.length);
 
-      markers.add(Marker(
-        markerId: MarkerId(entry.key),
-        position: LatLng(first.locationLat!, first.locationLng!),
-        icon: icon,
-        onTap: () {
-          if (group.length == 1) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => PostDetailScreen(post: group.first),
-              ),
-            );
-          } else {
-            _showLocationSheet(context, group);
-          }
-        },
-      ));
+      markers.add(
+        Marker(
+          markerId: MarkerId(entry.key),
+          position: LatLng(first.locationLat!, first.locationLng!),
+          icon: icon,
+          onTap: () {
+            if (group.length == 1) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => PostDetailScreen(post: group.first),
+                ),
+              );
+            } else {
+              _showLocationSheet(context, group);
+            }
+          },
+        ),
+      );
     }
     return markers;
   }
@@ -272,7 +279,11 @@ class _MapViewScreenState extends State<MapViewScreen> {
     final radius = size / 2 - 3 * pixelRatio;
 
     canvas.drawCircle(center, radius, Paint()..color = Colors.white);
-    canvas.drawCircle(center, radius - 2.5 * pixelRatio, Paint()..color = color);
+    canvas.drawCircle(
+      center,
+      radius - 2.5 * pixelRatio,
+      Paint()..color = color,
+    );
 
     final iconPainter = TextPainter(
       text: TextSpan(
@@ -294,9 +305,15 @@ class _MapViewScreenState extends State<MapViewScreen> {
     if (count > 1) {
       final badgeCenter = Offset(size - 8 * pixelRatio, 8 * pixelRatio);
       canvas.drawCircle(
-          badgeCenter, 9 * pixelRatio, Paint()..color = Colors.white);
-      canvas.drawCircle(badgeCenter, 8 * pixelRatio,
-          Paint()..color = const Color(0xFFD85A30));
+        badgeCenter,
+        9 * pixelRatio,
+        Paint()..color = Colors.white,
+      );
+      canvas.drawCircle(
+        badgeCenter,
+        8 * pixelRatio,
+        Paint()..color = const Color(0xFFD85A30),
+      );
       final countPainter = TextPainter(
         text: TextSpan(
           text: '$count',
@@ -314,8 +331,7 @@ class _MapViewScreenState extends State<MapViewScreen> {
       );
     }
 
-    final img =
-        await recorder.endRecording().toImage(size.ceil(), size.ceil());
+    final img = await recorder.endRecording().toImage(size.ceil(), size.ceil());
     final bytes = await img.toByteData(format: ui.ImageByteFormat.png);
     return BitmapDescriptor.bytes(
       bytes!.buffer.asUint8List(),

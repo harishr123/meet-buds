@@ -2,17 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-// ---------------------------------------------------------------------------
-// ASSUMPTIONS — check these against your codebase before running.
-//
-//   _kPostsCollection      name of your posts collection
-//   _kPostAuthorField      field on a post doc holding the author's uid
-//   _kPostTitleField       field used as the headline in the moderation tile
-//   _kPostBodyField        field used as the body preview
-//
-// If any of these differ (e.g. you use `userId` rather than `authorId`),
-// change them here only — nothing below hardcodes a field name.
-// ---------------------------------------------------------------------------
+
 const String _kPostsCollection = 'posts';
 const String _kPostAuthorField = 'userId';
 const String _kPostTitleField = 'username';
@@ -21,12 +11,7 @@ const String _kPostBodyField = 'text';
 const String _kUsersCollection = 'users';
 const String _kReportsCollection = 'reports';
 
-/// Returns true if the signed-in user has `isModerator: true` on their user doc.
-///
-/// Call this from Profile to decide whether to render the Moderation entry.
-/// This is a convenience check only — the real enforcement lives in
-/// firestore.rules, so a user who fakes this client-side still cannot read
-/// reports or delete other people's posts.
+
 Future<bool> isCurrentUserModerator() async {
   final uid = FirebaseAuth.instance.currentUser?.uid;
   if (uid == null) return false;
@@ -41,7 +26,7 @@ Future<bool> isCurrentUserModerator() async {
   }
 }
 
-/// One post, plus every pending report filed against it.
+
 class _ReportGroup {
   _ReportGroup(this.postId);
 
@@ -50,7 +35,7 @@ class _ReportGroup {
 
   int get count => reports.length;
 
-  /// Most recent report timestamp, used to sort groups.
+
   DateTime get latest {
     DateTime newest = DateTime.fromMillisecondsSinceEpoch(0);
     for (final r in reports) {
@@ -60,7 +45,7 @@ class _ReportGroup {
     return newest;
   }
 
-  /// Reason -> number of reports citing it, e.g. {Spam: 2, Harassment: 1}.
+
   Map<String, int> get reasonTally {
     final tally = <String, int>{};
     for (final r in reports) {
@@ -117,7 +102,7 @@ class ModerationScreen extends StatelessWidget {
     );
   }
 
-  /// Collapses many reports into one entry per reported post.
+
   List<_ReportGroup> _group(
     List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
   ) {
@@ -210,8 +195,7 @@ class _ReportCardState extends State<_ReportCard> {
     }
   }
 
-  /// Marks every report on this post as resolved. The report docs are kept
-  /// rather than deleted, so there is an audit trail of who actioned what.
+
   Future<void> _dismiss(_ReportGroup group) async {
     final uid = FirebaseAuth.instance.currentUser!.uid;
     final batch = FirebaseFirestore.instance.batch();
@@ -227,8 +211,6 @@ class _ReportCardState extends State<_ReportCard> {
     _toast('Dismissed ${group.count} report(s)');
   }
 
-  /// Deletes the reported post and resolves its reports in one batch, so the
-  /// queue can never be left holding reports for a post that is already gone.
   Future<void> _deletePost(_ReportGroup group) async {
     final confirmed = await showDialog<bool>(
       context: context,

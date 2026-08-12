@@ -5,9 +5,15 @@ void main() {
   group('PostModel status getter', () {
     test('returns upcoming when start time is in the future', () {
       final post = PostModel(
-        id: '1', userId: 'u1', username: 'test',
-        text: 'test', imageUrls: [], likes: [], joinedBy: [],
-        activityType: 'gym', maxParticipants: 5,
+        id: '1',
+        userId: 'u1',
+        username: 'test',
+        text: 'test',
+        imageUrls: [],
+        likes: [],
+        joinedBy: [],
+        activityType: 'gym',
+        maxParticipants: 5,
         timestamp: DateTime.now(),
         startTime: DateTime.now().add(const Duration(hours: 1)),
         endTime: DateTime.now().add(const Duration(hours: 2)),
@@ -17,9 +23,15 @@ void main() {
 
     test('returns ongoing when now is between start and end', () {
       final post = PostModel(
-        id: '1', userId: 'u1', username: 'test',
-        text: 'test', imageUrls: [], likes: [], joinedBy: [],
-        activityType: 'gym', maxParticipants: 5,
+        id: '1',
+        userId: 'u1',
+        username: 'test',
+        text: 'test',
+        imageUrls: [],
+        likes: [],
+        joinedBy: [],
+        activityType: 'gym',
+        maxParticipants: 5,
         timestamp: DateTime.now(),
         startTime: DateTime.now().subtract(const Duration(hours: 1)),
         endTime: DateTime.now().add(const Duration(hours: 1)),
@@ -29,9 +41,15 @@ void main() {
 
     test('returns completed when end time is in the past', () {
       final post = PostModel(
-        id: '1', userId: 'u1', username: 'test',
-        text: 'test', imageUrls: [], likes: [], joinedBy: [],
-        activityType: 'gym', maxParticipants: 5,
+        id: '1',
+        userId: 'u1',
+        username: 'test',
+        text: 'test',
+        imageUrls: [],
+        likes: [],
+        joinedBy: [],
+        activityType: 'gym',
+        maxParticipants: 5,
         timestamp: DateTime.now(),
         startTime: DateTime.now().subtract(const Duration(hours: 2)),
         endTime: DateTime.now().subtract(const Duration(hours: 1)),
@@ -41,9 +59,15 @@ void main() {
 
     test('returns upcoming when no times set', () {
       final post = PostModel(
-        id: '1', userId: 'u1', username: 'test',
-        text: 'test', imageUrls: [], likes: [], joinedBy: [],
-        activityType: 'gym', maxParticipants: 5,
+        id: '1',
+        userId: 'u1',
+        username: 'test',
+        text: 'test',
+        imageUrls: [],
+        likes: [],
+        joinedBy: [],
+        activityType: 'gym',
+        maxParticipants: 5,
         timestamp: DateTime.now(),
       );
       expect(post.status, ActivityStatus.upcoming);
@@ -51,10 +75,15 @@ void main() {
 
     test('isFull returns true when joinedBy reaches maxParticipants', () {
       final post = PostModel(
-        id: '1', userId: 'u1', username: 'test',
-        text: 'test', imageUrls: [], likes: [],
+        id: '1',
+        userId: 'u1',
+        username: 'test',
+        text: 'test',
+        imageUrls: [],
+        likes: [],
         joinedBy: ['a', 'b', 'c'],
-        activityType: 'gym', maxParticipants: 3,
+        activityType: 'gym',
+        maxParticipants: 3,
         timestamp: DateTime.now(),
       );
       expect(post.joinedBy.length >= post.maxParticipants, true);

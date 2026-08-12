@@ -50,9 +50,7 @@ Future<void> showReportDialog(
   final uid = FirebaseAuth.instance.currentUser!.uid;
 
   try {
-    // Deterministic document id means one report per user per post. A repeat
-    // report targets an existing doc, which counts as an update — and only
-    // moderators may update reports — so Firestore rejects it for normal users.
+
     await FirebaseFirestore.instance
         .collection('reports')
         .doc('${postId}_$uid')

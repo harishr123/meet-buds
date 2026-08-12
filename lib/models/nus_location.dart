@@ -7,7 +7,7 @@ class NUSLocation {
 
   const NUSLocation({required this.name, required this.lat, required this.lng});
 
-  // Coordinates verified against Google Maps place data (July 2026).
+
   static const List<NUSLocation> all = [
     NUSLocation(name: 'UTown Gym', lat: 1.3045, lng: 103.7725),
     NUSLocation(name: 'UTown Green', lat: 1.3049, lng: 103.7732),

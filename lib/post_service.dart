@@ -31,24 +31,26 @@ class PostService {
     final userDoc = await _db.collection('users').doc(user.uid).get();
     final username = userDoc.data()?['username'] ?? user.email ?? 'Anonymous';
     final avatar = userDoc.data()?['avatarUrl'];
-    await postRef.set(PostModel(
-      id: postRef.id,
-      userId: user.uid,
-      username: username,
-      userAvatar: avatar,
-      text: text,
-      imageUrls: [],
-      location: location,
-      locationLat: locationLat,
-      locationLng: locationLng,
-      timestamp: DateTime.now(),
-      likes: [],
-      joinedBy: [],
-      activityType: activityType,
-      maxParticipants: maxParticipants,
-      startTime: startTime,
-      endTime: endTime,
-    ).toMap());
+    await postRef.set(
+      PostModel(
+        id: postRef.id,
+        userId: user.uid,
+        username: username,
+        userAvatar: avatar,
+        text: text,
+        imageUrls: [],
+        location: location,
+        locationLat: locationLat,
+        locationLng: locationLng,
+        timestamp: DateTime.now(),
+        likes: [],
+        joinedBy: [],
+        activityType: activityType,
+        maxParticipants: maxParticipants,
+        startTime: startTime,
+        endTime: endTime,
+      ).toMap(),
+    );
   }
 
   Future<void> updatePost({
@@ -65,7 +67,9 @@ class PostService {
       'location': newLocation,
       'locationLat': newLocationLat,
       'locationLng': newLocationLng,
-      'startTime': newStartTime != null ? Timestamp.fromDate(newStartTime) : null,
+      'startTime': newStartTime != null
+          ? Timestamp.fromDate(newStartTime)
+          : null,
       'endTime': newEndTime != null ? Timestamp.fromDate(newEndTime) : null,
     });
   }
@@ -140,7 +144,7 @@ class PostService {
         .map((snap) => snap.docs.map(CommentModel.fromFirestore).toList());
   }
 
-Future<void> addComment(
+  Future<void> addComment(
     String postId,
     String text, {
     String? replyToId,
@@ -154,16 +158,19 @@ Future<void> addComment(
     final commentRef = postRef.collection('comments').doc();
 
     await _db.runTransaction((tx) async {
-      tx.set(commentRef, CommentModel(
-        id: commentRef.id,
-        userId: user.uid,
-        username: username,
-        userAvatar: avatar,
-        text: text,
-        timestamp: DateTime.now(),
-        replyToId: replyToId,
-        replyToUsername: replyToUsername,
-      ).toMap());
+      tx.set(
+        commentRef,
+        CommentModel(
+          id: commentRef.id,
+          userId: user.uid,
+          username: username,
+          userAvatar: avatar,
+          text: text,
+          timestamp: DateTime.now(),
+          replyToId: replyToId,
+          replyToUsername: replyToUsername,
+        ).toMap(),
+      );
       tx.update(postRef, {'commentCount': FieldValue.increment(1)});
     });
   }

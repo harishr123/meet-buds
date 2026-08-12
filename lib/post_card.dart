@@ -29,7 +29,9 @@ class _PostCardState extends State<PostCard> {
       return;
     }
     setState(() => _loadingJoined = true);
-    final names = await widget.postService.getJoinedUsernames(widget.post.joinedBy);
+    final names = await widget.postService.getJoinedUsernames(
+      widget.post.joinedBy,
+    );
     setState(() {
       _joinedUsernames = names;
       _showJoined = true;
@@ -103,7 +105,9 @@ class _PostCardState extends State<PostCard> {
                       border: OutlineInputBorder(),
                     ),
                     child: Text(
-                      locCtrl.text.isEmpty ? 'Tap to set location' : locCtrl.text,
+                      locCtrl.text.isEmpty
+                          ? 'Tap to set location'
+                          : locCtrl.text,
                       style: TextStyle(
                         color: locCtrl.text.isEmpty
                             ? Colors.grey.shade500
@@ -134,11 +138,20 @@ class _PostCardState extends State<PostCard> {
                           );
                           if (time == null) return;
                           setDialogState(() {
-                            startTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+                            startTime = DateTime(
+                              date.year,
+                              date.month,
+                              date.day,
+                              time.hour,
+                              time.minute,
+                            );
                           });
                         },
                         icon: const Icon(Icons.access_time, size: 14),
-                        label: Text(formatTime(startTime), style: const TextStyle(fontSize: 12)),
+                        label: Text(
+                          formatTime(startTime),
+                          style: const TextStyle(fontSize: 12),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -161,11 +174,20 @@ class _PostCardState extends State<PostCard> {
                           );
                           if (time == null) return;
                           setDialogState(() {
-                            endTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+                            endTime = DateTime(
+                              date.year,
+                              date.month,
+                              date.day,
+                              time.hour,
+                              time.minute,
+                            );
                           });
                         },
                         icon: const Icon(Icons.access_time, size: 14),
-                        label: Text(formatTime(endTime), style: const TextStyle(fontSize: 12)),
+                        label: Text(
+                          formatTime(endTime),
+                          style: const TextStyle(fontSize: 12),
+                        ),
                       ),
                     ),
                   ],
@@ -183,7 +205,9 @@ class _PostCardState extends State<PostCard> {
                 await widget.postService.updatePost(
                   postId: widget.post.id,
                   newText: textCtrl.text.trim(),
-                  newLocation: locCtrl.text.trim().isEmpty ? null : locCtrl.text.trim(),
+                  newLocation: locCtrl.text.trim().isEmpty
+                      ? null
+                      : locCtrl.text.trim(),
                   newLocationLat: newLat,
                   newLocationLng: newLng,
                   newStartTime: startTime,
@@ -285,9 +309,14 @@ class _PostCardState extends State<PostCard> {
         children: [
           Icon(icon, size: 10, color: color),
           const SizedBox(width: 4),
-          Text(label,
-              style: TextStyle(
-                  fontSize: 11, fontWeight: FontWeight.w600, color: color)),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
         ],
       ),
     );
@@ -316,7 +345,8 @@ class _PostCardState extends State<PostCard> {
     final maxP = widget.post.maxParticipants;
     final isFull = maxP > 0 && joinedCount >= maxP;
     final spotsLeft = maxP > 0 ? maxP - joinedCount : null;
-    final hasTime = widget.post.startTime != null && widget.post.endTime != null;
+    final hasTime =
+        widget.post.startTime != null && widget.post.endTime != null;
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -334,7 +364,9 @@ class _PostCardState extends State<PostCard> {
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
               ),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(16),
+              ),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             child: Row(
@@ -368,26 +400,35 @@ class _PostCardState extends State<PostCard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(username,
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                            style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: headerText)),
+                        Text(
+                          username,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: headerText,
+                          ),
+                        ),
                         if (widget.post.location != null)
                           Row(
                             children: [
-                              Icon(Icons.location_on,
-                                  size: 11, color: headerText.withValues(alpha: 0.7)),
+                              Icon(
+                                Icons.location_on,
+                                size: 11,
+                                color: headerText.withValues(alpha: 0.7),
+                              ),
                               const SizedBox(width: 2),
                               Expanded(
-                                child: Text(widget.post.location!,
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                    style: TextStyle(
-                                        fontSize: 11,
-                                        color: headerText.withValues(alpha: 0.7))),
+                                child: Text(
+                                  widget.post.location!,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: headerText.withValues(alpha: 0.7),
+                                  ),
+                                ),
                               ),
                             ],
                           ),
@@ -396,11 +437,14 @@ class _PostCardState extends State<PostCard> {
                   ),
                 ),
                 const SizedBox(width: 8),
-    // ...badge, time, PopupMenuButton unchanged from here
-              // ...badge, time, PopupMenuButton unchanged below
+                // ...badge, time, PopupMenuButton unchanged from here
+                // ...badge, time, PopupMenuButton unchanged below
                 // Activity badge
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.6),
                     borderRadius: BorderRadius.circular(99),
@@ -408,21 +452,30 @@ class _PostCardState extends State<PostCard> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(config['emoji'] as String,
-                          style: const TextStyle(fontSize: 12)),
+                      Text(
+                        config['emoji'] as String,
+                        style: const TextStyle(fontSize: 12),
+                      ),
                       const SizedBox(width: 4),
-                      Text(config['label'] as String,
-                          style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: badgeColor)),
+                      Text(
+                        config['label'] as String,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: badgeColor,
+                        ),
+                      ),
                     ],
                   ),
                 ),
                 const SizedBox(width: 4),
-                Text(_timeAgo(widget.post.timestamp),
-                    style: TextStyle(
-                        fontSize: 11, color: headerText.withValues(alpha: 0.7))),
+                Text(
+                  _timeAgo(widget.post.timestamp),
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: headerText.withValues(alpha: 0.7),
+                  ),
+                ),
                 PopupMenuButton<String>(
                   icon: Icon(Icons.more_horiz, size: 18, color: headerText),
                   onSelected: (val) {
@@ -440,11 +493,20 @@ class _PostCardState extends State<PostCard> {
                   },
                   itemBuilder: (_) => isOwner
                       ? [
-                          const PopupMenuItem(value: 'edit', child: Text('Edit')),
-                          const PopupMenuItem(value: 'delete', child: Text('Delete')),
+                          const PopupMenuItem(
+                            value: 'edit',
+                            child: Text('Edit'),
+                          ),
+                          const PopupMenuItem(
+                            value: 'delete',
+                            child: Text('Delete'),
+                          ),
                         ]
                       : [
-                          const PopupMenuItem(value: 'report', child: Text('Report')),
+                          const PopupMenuItem(
+                            value: 'report',
+                            child: Text('Report'),
+                          ),
                         ],
                 ),
               ],
@@ -463,11 +525,18 @@ class _PostCardState extends State<PostCard> {
                     children: [
                       _statusBadge(widget.post.status),
                       const SizedBox(width: 8),
-                      Icon(Icons.access_time, size: 12, color: Colors.grey.shade400),
+                      Icon(
+                        Icons.access_time,
+                        size: 12,
+                        color: Colors.grey.shade400,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         '${_formatDateTime(widget.post.startTime!)} – ${_formatDateTime(widget.post.endTime!)}',
-                        style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey.shade500,
+                        ),
                       ),
                     ],
                   ),
@@ -475,18 +544,22 @@ class _PostCardState extends State<PostCard> {
                 ],
 
                 if (widget.post.text.isNotEmpty)
-                  Text(widget.post.text,
-                      style: const TextStyle(fontSize: 15, height: 1.45)),
+                  Text(
+                    widget.post.text,
+                    style: const TextStyle(fontSize: 15, height: 1.45),
+                  ),
 
                 if (widget.post.imageUrls.isNotEmpty) ...[
                   const SizedBox(height: 10),
                   ClipRRect(
                     borderRadius: BorderRadius.circular(10),
                     child: widget.post.imageUrls.length == 1
-                        ? Image.network(widget.post.imageUrls[0],
+                        ? Image.network(
+                            widget.post.imageUrls[0],
                             width: double.infinity,
                             height: 200,
-                            fit: BoxFit.cover)
+                            fit: BoxFit.cover,
+                          )
                         : SizedBox(
                             height: 200,
                             child: ListView.separated(
@@ -497,10 +570,11 @@ class _PostCardState extends State<PostCard> {
                               itemBuilder: (_, i) => ClipRRect(
                                 borderRadius: BorderRadius.circular(8),
                                 child: Image.network(
-                                    widget.post.imageUrls[i],
-                                    width: 240,
-                                    height: 200,
-                                    fit: BoxFit.cover),
+                                  widget.post.imageUrls[i],
+                                  width: 240,
+                                  height: 200,
+                                  fit: BoxFit.cover,
+                                ),
                               ),
                             ),
                           ),
@@ -515,7 +589,9 @@ class _PostCardState extends State<PostCard> {
                       Icon(
                         isFull ? Icons.block : Icons.people_outline,
                         size: 13,
-                        color: isFull ? Colors.red.shade400 : Colors.grey.shade500,
+                        color: isFull
+                            ? Colors.red.shade400
+                            : Colors.grey.shade500,
                       ),
                       const SizedBox(width: 4),
                       Text(
@@ -524,7 +600,9 @@ class _PostCardState extends State<PostCard> {
                             : '$spotsLeft spot${spotsLeft == 1 ? '' : 's'} left',
                         style: TextStyle(
                           fontSize: 12,
-                          color: isFull ? Colors.red.shade400 : Colors.grey.shade500,
+                          color: isFull
+                              ? Colors.red.shade400
+                              : Colors.grey.shade500,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -537,17 +615,25 @@ class _PostCardState extends State<PostCard> {
                 Row(
                   children: [
                     GestureDetector(
-                      onTap: () => widget.postService.toggleLike(widget.post.id),
+                      onTap: () =>
+                          widget.postService.toggleLike(widget.post.id),
                       child: Row(
                         children: [
                           Icon(
                             isLiked ? Icons.favorite : Icons.favorite_border,
                             size: 19,
-                            color: isLiked ? const Color(0xFFD4537E) : Colors.grey.shade400,
+                            color: isLiked
+                                ? const Color(0xFFD4537E)
+                                : Colors.grey.shade400,
                           ),
                           const SizedBox(width: 5),
-                          Text('${widget.post.likes.length}',
-                              style: TextStyle(fontSize: 13, color: Colors.grey.shade500)),
+                          Text(
+                            '${widget.post.likes.length}',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey.shade500,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -564,30 +650,32 @@ class _PostCardState extends State<PostCard> {
                             color: isOwner
                                 ? Colors.grey.shade300
                                 : isFull && !isJoined
-                                    ? Colors.grey.shade300
-                                    : isJoined
-                                        ? const Color(0xFF1D9E75)
-                                        : Colors.grey.shade400,
+                                ? Colors.grey.shade300
+                                : isJoined
+                                ? const Color(0xFF1D9E75)
+                                : Colors.grey.shade400,
                           ),
                           const SizedBox(width: 5),
                           Text(
                             isOwner
                                 ? 'Your post'
                                 : isFull && !isJoined
-                                    ? 'Full'
-                                    : isJoined
-                                        ? 'Joined'
-                                        : 'Join',
+                                ? 'Full'
+                                : isJoined
+                                ? 'Joined'
+                                : 'Join',
                             style: TextStyle(
                               fontSize: 13,
-                              fontWeight: isJoined ? FontWeight.w500 : FontWeight.normal,
+                              fontWeight: isJoined
+                                  ? FontWeight.w500
+                                  : FontWeight.normal,
                               color: isOwner
                                   ? Colors.grey.shade300
                                   : isFull && !isJoined
-                                      ? Colors.grey.shade300
-                                      : isJoined
-                                          ? const Color(0xFF1D9E75)
-                                          : Colors.grey.shade400,
+                                  ? Colors.grey.shade300
+                                  : isJoined
+                                  ? const Color(0xFF1D9E75)
+                                  : Colors.grey.shade400,
                             ),
                           ),
                         ],
@@ -602,11 +690,19 @@ class _PostCardState extends State<PostCard> {
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.mode_comment_outlined,
-                              size: 18, color: Colors.grey.shade400),
+                          Icon(
+                            Icons.mode_comment_outlined,
+                            size: 18,
+                            color: Colors.grey.shade400,
+                          ),
                           const SizedBox(width: 5),
-                          Text('${widget.post.commentCount}',
-                              style: TextStyle(fontSize: 13, color: Colors.grey.shade500)),
+                          Text(
+                            '${widget.post.commentCount}',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey.shade500,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -619,11 +715,17 @@ class _PostCardState extends State<PostCard> {
                                 width: 12,
                                 height: 12,
                                 child: CircularProgressIndicator(
-                                    strokeWidth: 1.5, color: Colors.grey.shade400),
+                                  strokeWidth: 1.5,
+                                  color: Colors.grey.shade400,
+                                ),
                               )
                             : Text(
                                 '$joinedCount joining ${_showJoined ? '▴' : '▾'}',
-                                style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade500,
+                                ),
+                              ),
                       ),
                   ],
                 ),
@@ -634,15 +736,22 @@ class _PostCardState extends State<PostCard> {
                     spacing: 6,
                     runSpacing: 6,
                     children: _joinedUsernames
-                        .map((name) => Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: gradientColors[0],
-                                borderRadius: BorderRadius.circular(99),
-                              ),
-                              child: Text(name,
-                                  style: TextStyle(fontSize: 12, color: headerText)),
-                            ))
+                        .map(
+                          (name) => Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: gradientColors[0],
+                              borderRadius: BorderRadius.circular(99),
+                            ),
+                            child: Text(
+                              name,
+                              style: TextStyle(fontSize: 12, color: headerText),
+                            ),
+                          ),
+                        )
                         .toList(),
                   ),
                 ],

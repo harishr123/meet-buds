@@ -1,10 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:meet_buddies/post_model.dart';
 
-// Mirrors the exact capacity check used in post_card.dart (line ~283):
-//   final isFull = maxP > 0 && joinedCount >= maxP;
-// Kept here as a local helper so these tests don't require any changes
-// to PostModel or PostCard.
+
 bool isFull(PostModel post) {
   final maxP = post.maxParticipants;
   final joinedCount = post.joinedBy.length;
@@ -47,7 +44,7 @@ void main() {
     });
 
     test('returns true when joinedBy.length exceeds maxParticipants', () {
-      // Guards against race conditions where two joins land concurrently.
+
       final post = _buildPost(joinedBy: ['a', 'b', 'c', 'd'], maxParticipants: 3);
       expect(isFull(post), isTrue);
     });

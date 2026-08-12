@@ -27,7 +27,9 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
         _timer?.cancel();
         if (mounted) {
           Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (_) => const HomeScreen()));
+            context,
+            MaterialPageRoute(builder: (_) => const HomeScreen()),
+          );
         }
       }
     });
@@ -40,7 +42,10 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
   }
 
   Future<void> _resendEmail() async {
-    setState(() { _resending = true; _resendMessage = null; });
+    setState(() {
+      _resending = true;
+      _resendMessage = null;
+    });
     try {
       await FirebaseAuth.instance.currentUser?.sendEmailVerification();
       setState(() => _resendMessage = 'Verification email resent!');
@@ -54,7 +59,9 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
     await FirebaseAuth.instance.signOut();
     if (mounted) {
       Navigator.pushReplacement(
-      context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
     }
   }
 
@@ -71,14 +78,23 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 40),
-              const Text('Check your email',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700)),
+              const Text(
+                'Check your email',
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700),
+              ),
               const SizedBox(height: 8),
-              Text('We sent a verification link to',
-                  style: TextStyle(fontSize: 15, color: Colors.grey.shade500)),
+              Text(
+                'We sent a verification link to',
+                style: TextStyle(fontSize: 15, color: Colors.grey.shade500),
+              ),
               const SizedBox(height: 4),
-              Text(email,
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+              Text(
+                email,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
               const SizedBox(height: 32),
               Container(
                 padding: const EdgeInsets.all(16),
@@ -88,12 +104,19 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.info_outline, color: Color(0xFF0C447C), size: 20),
+                    const Icon(
+                      Icons.info_outline,
+                      color: Color(0xFF0C447C),
+                      size: 20,
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         'Click the link in the email to verify your account. This page will automatically redirect once verified.',
-                        style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey.shade700,
+                        ),
                       ),
                     ),
                   ],
@@ -103,12 +126,15 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
               if (_resendMessage != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 16),
-                  child: Text(_resendMessage!,
-                      style: TextStyle(
-                          fontSize: 13,
-                          color: _resendMessage!.contains('resent')
-                              ? const Color(0xFF085041)
-                              : const Color(0xFFA32D2D))),
+                  child: Text(
+                    _resendMessage!,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: _resendMessage!.contains('resent')
+                          ? const Color(0xFF085041)
+                          : const Color(0xFFA32D2D),
+                    ),
+                  ),
                 ),
               SizedBox(
                 width: double.infinity,
@@ -119,7 +145,8 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                         onPressed: _resendEmail,
                         style: OutlinedButton.styleFrom(
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10)),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
                         child: const Text('Resend verification email'),
                       ),
@@ -130,8 +157,10 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                 height: 48,
                 child: TextButton(
                   onPressed: _signOut,
-                  child: Text('Sign out',
-                      style: TextStyle(color: Colors.grey.shade500)),
+                  child: Text(
+                    'Sign out',
+                    style: TextStyle(color: Colors.grey.shade500),
+                  ),
                 ),
               ),
             ],

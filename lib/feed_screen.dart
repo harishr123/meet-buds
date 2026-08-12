@@ -69,14 +69,23 @@ class _FeedScreenState extends State<FeedScreen> {
             padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
             child: TextField(
               controller: _searchController,
-              onChanged: (val) => setState(() => _searchQuery = val.toLowerCase()),
+              onChanged: (val) =>
+                  setState(() => _searchQuery = val.toLowerCase()),
               decoration: InputDecoration(
                 hintText: 'Search activities or locations...',
                 hintStyle: TextStyle(fontSize: 14, color: Colors.grey.shade400),
-                prefixIcon: Icon(Icons.search, color: Colors.grey.shade400, size: 20),
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: Colors.grey.shade400,
+                  size: 20,
+                ),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
-                        icon: Icon(Icons.clear, size: 18, color: Colors.grey.shade400),
+                        icon: Icon(
+                          Icons.clear,
+                          size: 18,
+                          color: Colors.grey.shade400,
+                        ),
                         onPressed: () {
                           _searchController.clear();
                           setState(() => _searchQuery = '');
@@ -105,13 +114,18 @@ class _FeedScreenState extends State<FeedScreen> {
               itemBuilder: (_, i) {
                 final f = _filters[i];
                 final selected = _selectedFilter == f['type'];
-                final color = _filterColors[f['type']] ?? const Color(0xFF3C3489);
-                final bgColor = _filterBgColors[f['type']] ?? const Color(0xFFEEEDFE);
+                final color =
+                    _filterColors[f['type']] ?? const Color(0xFF3C3489);
+                final bgColor =
+                    _filterBgColors[f['type']] ?? const Color(0xFFEEEDFE);
                 return GestureDetector(
                   onTap: () => setState(() => _selectedFilter = f['type']!),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 150),
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: selected ? bgColor : Colors.grey.shade100,
                       borderRadius: BorderRadius.circular(99),
@@ -123,14 +137,19 @@ class _FeedScreenState extends State<FeedScreen> {
                     child: Row(
                       children: [
                         if (f['emoji']!.isNotEmpty) ...[
-                          Text(f['emoji']!, style: const TextStyle(fontSize: 13)),
+                          Text(
+                            f['emoji']!,
+                            style: const TextStyle(fontSize: 13),
+                          ),
                           const SizedBox(width: 5),
                         ],
                         Text(
                           f['label']!,
                           style: TextStyle(
                             fontSize: 13,
-                            fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                            fontWeight: selected
+                                ? FontWeight.w600
+                                : FontWeight.normal,
                             color: selected ? color : Colors.grey.shade600,
                           ),
                         ),
@@ -157,11 +176,16 @@ class _FeedScreenState extends State<FeedScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.dynamic_feed_outlined,
-                            size: 64, color: Colors.grey),
+                        Icon(
+                          Icons.dynamic_feed_outlined,
+                          size: 64,
+                          color: Colors.grey,
+                        ),
                         SizedBox(height: 12),
-                        Text('No posts yet. Be the first!',
-                            style: TextStyle(color: Colors.grey)),
+                        Text(
+                          'No posts yet. Be the first!',
+                          style: TextStyle(color: Colors.grey),
+                        ),
                       ],
                     ),
                   );
@@ -177,7 +201,8 @@ class _FeedScreenState extends State<FeedScreen> {
                 if (_searchQuery.isNotEmpty) {
                   posts = posts.where((p) {
                     return p.text.toLowerCase().contains(_searchQuery) ||
-                        (p.location?.toLowerCase().contains(_searchQuery) ?? false) ||
+                        (p.location?.toLowerCase().contains(_searchQuery) ??
+                            false) ||
                         p.username.toLowerCase().contains(_searchQuery);
                   }).toList();
                 }
@@ -187,7 +212,11 @@ class _FeedScreenState extends State<FeedScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.search_off, size: 64, color: Colors.grey.shade300),
+                        Icon(
+                          Icons.search_off,
+                          size: 64,
+                          color: Colors.grey.shade300,
+                        ),
                         const SizedBox(height: 12),
                         Text(
                           _searchQuery.isNotEmpty

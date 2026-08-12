@@ -62,7 +62,13 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       initialTime: TimeOfDay.now(),
     );
     if (time == null) return;
-    final picked = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+    final picked = DateTime(
+      date.year,
+      date.month,
+      date.day,
+      time.hour,
+      time.minute,
+    );
     setState(() {
       if (isStart) {
         _startTime = picked;
@@ -102,7 +108,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       return;
     }
 
-    setState(() { _loading = true; _errorMessage = ''; });
+    setState(() {
+      _loading = true;
+      _errorMessage = '';
+    });
     try {
       await _postService.createPost(
         text: text,
@@ -118,9 +127,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       if (mounted) Navigator.pop(context);
     } catch (e) {
       setState(() => _loading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
     }
   }
 
@@ -141,8 +150,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 )
               : TextButton(
                   onPressed: _submit,
-                  child: const Text('Post',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  child: const Text(
+                    'Post',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
                 ),
         ],
       ),
@@ -151,8 +162,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Activity type',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+            const Text(
+              'Activity type',
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+            ),
             const SizedBox(height: 8),
             SizedBox(
               height: 44,
@@ -167,7 +180,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                     onTap: () => setState(() => _selectedActivity = a['type']!),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 150),
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: selected
                             ? _activityColor(_selectedActivity)
@@ -181,16 +197,23 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                       ),
                       child: Row(
                         children: [
-                          Text(a['emoji']!, style: const TextStyle(fontSize: 14)),
+                          Text(
+                            a['emoji']!,
+                            style: const TextStyle(fontSize: 14),
+                          ),
                           const SizedBox(width: 6),
-                          Text(a['label']!,
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
-                                color: selected
-                                    ? _activityTextColor(_selectedActivity)
-                                    : Colors.grey.shade700,
-                              )),
+                          Text(
+                            a['label']!,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: selected
+                                  ? FontWeight.w600
+                                  : FontWeight.normal,
+                              color: selected
+                                  ? _activityTextColor(_selectedActivity)
+                                  : Colors.grey.shade700,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -247,13 +270,22 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () => _pickTime(isStart: true),
-                    icon: Icon(Icons.access_time, size: 16,
-                        color: _startTime == null ? Colors.grey : const Color(0xFF1D9E75)),
+                    icon: Icon(
+                      Icons.access_time,
+                      size: 16,
+                      color: _startTime == null
+                          ? Colors.grey
+                          : const Color(0xFF1D9E75),
+                    ),
                     label: Text(
-                      _startTime == null ? 'Start time (required)' : _formatTime(_startTime),
+                      _startTime == null
+                          ? 'Start time (required)'
+                          : _formatTime(_startTime),
                       style: TextStyle(
                         fontSize: 12,
-                        color: _startTime == null ? Colors.grey : const Color(0xFF1D9E75),
+                        color: _startTime == null
+                            ? Colors.grey
+                            : const Color(0xFF1D9E75),
                       ),
                     ),
                   ),
@@ -262,13 +294,22 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () => _pickTime(isStart: false),
-                    icon: Icon(Icons.access_time, size: 16,
-                        color: _endTime == null ? Colors.grey : const Color(0xFF1D9E75)),
+                    icon: Icon(
+                      Icons.access_time,
+                      size: 16,
+                      color: _endTime == null
+                          ? Colors.grey
+                          : const Color(0xFF1D9E75),
+                    ),
                     label: Text(
-                      _endTime == null ? 'End time (required)' : _formatTime(_endTime),
+                      _endTime == null
+                          ? 'End time (required)'
+                          : _formatTime(_endTime),
                       style: TextStyle(
                         fontSize: 12,
-                        color: _endTime == null ? Colors.grey : const Color(0xFF1D9E75),
+                        color: _endTime == null
+                            ? Colors.grey
+                            : const Color(0xFF1D9E75),
                       ),
                     ),
                   ),
@@ -278,8 +319,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
             const SizedBox(height: 20),
 
-            const Text('Max participants',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+            const Text(
+              'Max participants',
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+            ),
             const SizedBox(height: 8),
             Row(
               children: [
@@ -290,7 +333,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                     max: 20,
                     divisions: 18,
                     label: '$_maxParticipants',
-                    onChanged: (val) => setState(() => _maxParticipants = val.toInt()),
+                    onChanged: (val) =>
+                        setState(() => _maxParticipants = val.toInt()),
                   ),
                 ),
                 SizedBox(
@@ -306,18 +350,30 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             if (_errorMessage.isNotEmpty) ...[
               const SizedBox(height: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFCEBEB),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.error_outline, size: 16, color: Color(0xFFA32D2D)),
+                    const Icon(
+                      Icons.error_outline,
+                      size: 16,
+                      color: Color(0xFFA32D2D),
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Text(_errorMessage,
-                          style: const TextStyle(color: Color(0xFFA32D2D), fontSize: 13)),
+                      child: Text(
+                        _errorMessage,
+                        style: const TextStyle(
+                          color: Color(0xFFA32D2D),
+                          fontSize: 13,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -331,34 +387,52 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
   Color _activityColor(String type) {
     switch (type) {
-      case 'gym': return const Color(0xFFE1F5EE);
-      case 'food': return const Color(0xFFFAECE7);
-      case 'study': return const Color(0xFFE6F1FB);
-      case 'sports': return const Color(0xFFEAF3DE);
-      case 'hangout': return const Color(0xFFFAEEDA);
-      default: return const Color(0xFFEEEDFE);
+      case 'gym':
+        return const Color(0xFFE1F5EE);
+      case 'food':
+        return const Color(0xFFFAECE7);
+      case 'study':
+        return const Color(0xFFE6F1FB);
+      case 'sports':
+        return const Color(0xFFEAF3DE);
+      case 'hangout':
+        return const Color(0xFFFAEEDA);
+      default:
+        return const Color(0xFFEEEDFE);
     }
   }
 
   Color _activityBorderColor(String type) {
     switch (type) {
-      case 'gym': return const Color(0xFF1D9E75);
-      case 'food': return const Color(0xFFD85A30);
-      case 'study': return const Color(0xFF378ADD);
-      case 'sports': return const Color(0xFF639922);
-      case 'hangout': return const Color(0xFFBA7517);
-      default: return const Color(0xFF7F77DD);
+      case 'gym':
+        return const Color(0xFF1D9E75);
+      case 'food':
+        return const Color(0xFFD85A30);
+      case 'study':
+        return const Color(0xFF378ADD);
+      case 'sports':
+        return const Color(0xFF639922);
+      case 'hangout':
+        return const Color(0xFFBA7517);
+      default:
+        return const Color(0xFF7F77DD);
     }
   }
 
   Color _activityTextColor(String type) {
     switch (type) {
-      case 'gym': return const Color(0xFF085041);
-      case 'food': return const Color(0xFF993C1D);
-      case 'study': return const Color(0xFF0C447C);
-      case 'sports': return const Color(0xFF3B6D11);
-      case 'hangout': return const Color(0xFF854F0B);
-      default: return const Color(0xFF3C3489);
+      case 'gym':
+        return const Color(0xFF085041);
+      case 'food':
+        return const Color(0xFF993C1D);
+      case 'study':
+        return const Color(0xFF0C447C);
+      case 'sports':
+        return const Color(0xFF3B6D11);
+      case 'hangout':
+        return const Color(0xFF854F0B);
+      default:
+        return const Color(0xFF3C3489);
     }
   }
 }

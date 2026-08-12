@@ -63,7 +63,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
       return;
     }
 
-    setState(() { isLoading = true; errorMessage = ''; });
+    setState(() {
+      isLoading = true;
+      errorMessage = '';
+    });
     try {
       final cred = await authService.signUp(email, password, username);
       if (bio.isNotEmpty && cred?.user != null) {
@@ -76,12 +79,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
       await FirebaseAuth.instance.currentUser?.sendEmailVerification();
       if (mounted) {
         Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (_) => const VerifyEmailScreen()));
+          context,
+          MaterialPageRoute(builder: (_) => const VerifyEmailScreen()),
+        );
       }
     } catch (e) {
-      setState(() { errorMessage = _friendlyError(e); });
+      setState(() {
+        errorMessage = _friendlyError(e);
+      });
     }
-    if (mounted) setState(() { isLoading = false; });
+    if (mounted)
+      setState(() {
+        isLoading = false;
+      });
   }
 
   @override
@@ -95,11 +105,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 40),
-              const Text('Create account',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700)),
+              const Text(
+                'Create account',
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700),
+              ),
               const SizedBox(height: 8),
-              Text('Find your next activity buddy at NUS',
-                  style: TextStyle(fontSize: 15, color: Colors.grey.shade500)),
+              Text(
+                'Find your next activity buddy at NUS',
+                style: TextStyle(fontSize: 15, color: Colors.grey.shade500),
+              ),
               const SizedBox(height: 40),
               TextField(
                 controller: usernameController,
@@ -146,18 +160,30 @@ class _SignUpScreenState extends State<SignUpScreen> {
               const SizedBox(height: 8),
               if (errorMessage.isNotEmpty)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFCEBEB),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline, size: 16, color: Color(0xFFA32D2D)),
+                      const Icon(
+                        Icons.error_outline,
+                        size: 16,
+                        color: Color(0xFFA32D2D),
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: Text(errorMessage,
-                            style: const TextStyle(color: Color(0xFFA32D2D), fontSize: 13)),
+                        child: Text(
+                          errorMessage,
+                          style: const TextStyle(
+                            color: Color(0xFFA32D2D),
+                            fontSize: 13,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -172,18 +198,26 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         onPressed: signUp,
                         style: ElevatedButton.styleFrom(
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10)),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
-                        child: const Text('Create account',
-                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                        child: const Text(
+                          'Create account',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
               ),
               const SizedBox(height: 16),
               Center(
                 child: TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: Text('Already have an account? Sign in',
-                      style: TextStyle(color: Colors.grey.shade600)),
+                  child: Text(
+                    'Already have an account? Sign in',
+                    style: TextStyle(color: Colors.grey.shade600),
+                  ),
                 ),
               ),
             ],

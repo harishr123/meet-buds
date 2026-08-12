@@ -86,14 +86,14 @@ class _CommentsSheetState extends State<CommentsSheet> {
     return '${diff.inDays}d';
   }
 
-  Widget _commentTile(CommentModel c, {required bool isReply, required String? uid}) {
+  Widget _commentTile(
+    CommentModel c, {
+    required bool isReply,
+    required String? uid,
+  }) {
     final isOwner = c.userId == uid;
     return Padding(
-      padding: EdgeInsets.only(
-        left: isReply ? 34 : 0,
-        top: 8,
-        bottom: 8,
-      ),
+      padding: EdgeInsets.only(left: isReply ? 34 : 0, top: 8, bottom: 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -108,7 +108,9 @@ class _CommentsSheetState extends State<CommentsSheet> {
               child: Text(
                 c.username.isNotEmpty ? c.username[0].toUpperCase() : '?',
                 style: TextStyle(
-                    fontSize: isReply ? 11 : 13, fontWeight: FontWeight.w600),
+                  fontSize: isReply ? 11 : 13,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),
@@ -119,27 +121,39 @@ class _CommentsSheetState extends State<CommentsSheet> {
               children: [
                 Row(
                   children: [
-                    Text(c.username,
-                        style: const TextStyle(
-                            fontSize: 13, fontWeight: FontWeight.w600)),
+                    Text(
+                      c.username,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     const SizedBox(width: 6),
-                    Text(_timeAgo(c.timestamp),
-                        style:
-                            TextStyle(fontSize: 11, color: Colors.grey.shade500)),
+                    Text(
+                      _timeAgo(c.timestamp),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 2),
                 RichText(
                   text: TextSpan(
                     style: const TextStyle(
-                        fontSize: 14, height: 1.35, color: Colors.black87),
+                      fontSize: 14,
+                      height: 1.35,
+                      color: Colors.black87,
+                    ),
                     children: [
                       if (c.replyToUsername != null)
                         TextSpan(
                           text: '@${c.replyToUsername} ',
                           style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              color: Colors.blueGrey.shade400),
+                            fontWeight: FontWeight.w600,
+                            color: Colors.blueGrey.shade400,
+                          ),
                         ),
                       TextSpan(text: c.text),
                     ],
@@ -148,18 +162,22 @@ class _CommentsSheetState extends State<CommentsSheet> {
                 const SizedBox(height: 4),
                 GestureDetector(
                   onTap: () => _startReply(c),
-                  child: Text('Reply',
-                      style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.grey.shade500)),
+                  child: Text(
+                    'Reply',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade500,
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
           if (isOwner)
             GestureDetector(
-              onTap: () => widget.postService.deleteComment(widget.postId, c.id),
+              onTap: () =>
+                  widget.postService.deleteComment(widget.postId, c.id),
               child: Icon(Icons.close, size: 16, color: Colors.grey.shade400),
             ),
         ],
@@ -195,8 +213,10 @@ class _CommentsSheetState extends State<CommentsSheet> {
               padding: EdgeInsets.fromLTRB(16, 12, 16, 8),
               child: Row(
                 children: [
-                  Text('Comments',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                  Text(
+                    'Comments',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
                 ],
               ),
             ),
@@ -213,7 +233,10 @@ class _CommentsSheetState extends State<CommentsSheet> {
                     return Center(
                       child: Text(
                         'No comments yet. Say something!',
-                        style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                        style: TextStyle(
+                          color: Colors.grey.shade500,
+                          fontSize: 13,
+                        ),
                       ),
                     );
                   }
@@ -226,7 +249,10 @@ class _CommentsSheetState extends State<CommentsSheet> {
                   }
 
                   return ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     itemCount: topLevel.length,
                     itemBuilder: (_, i) {
                       final parent = topLevel[i];
@@ -249,18 +275,28 @@ class _CommentsSheetState extends State<CommentsSheet> {
               Container(
                 width: double.infinity,
                 color: Colors.grey.shade100,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 child: Row(
                   children: [
                     Expanded(
                       child: Text(
                         'Replying to @${_replyingTo!.username}',
-                        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
                       ),
                     ),
                     GestureDetector(
                       onTap: _cancelReply,
-                      child: Icon(Icons.close, size: 16, color: Colors.grey.shade500),
+                      child: Icon(
+                        Icons.close,
+                        size: 16,
+                        color: Colors.grey.shade500,
+                      ),
                     ),
                   ],
                 ),
@@ -281,8 +317,10 @@ class _CommentsSheetState extends State<CommentsSheet> {
                         hintText: _replyingTo == null
                             ? 'Add a comment...'
                             : 'Reply to @${_replyingTo!.username}...',
-                        contentPadding:
-                            const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(20),
                           borderSide: BorderSide(color: Colors.grey.shade300),

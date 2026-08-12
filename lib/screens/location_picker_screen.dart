@@ -2,18 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../models/nus_location.dart';
 
-/// Result returned when the user confirms a pin placement.
+
 class LocationPickResult {
-  final String label; // nearest matched location name, shown everywhere else
-  final double lat; // exact drop position, for map view precision
+  final String label; 
+  final double lat; 
   final double lng;
 
   LocationPickResult({required this.label, required this.lat, required this.lng});
 }
 
 class LocationPickerScreen extends StatefulWidget {
-  /// Where to drop the pin when the screen opens. Pass the post's existing
-  /// coordinates when editing; leave null when creating a new post.
+  
   final LatLng? initialPosition;
 
   const LocationPickerScreen({super.key, this.initialPosition});
@@ -23,7 +22,7 @@ class LocationPickerScreen extends StatefulWidget {
 }
 
 class _LocationPickerScreenState extends State<LocationPickerScreen> {
-  // Default camera position centered roughly on NUS Kent Ridge campus.
+  
   static const LatLng _defaultCenter = LatLng(1.2966, 103.7764);
 
   late LatLng _pinPosition;
@@ -44,7 +43,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     super.dispose();
   }
 
-  /// Named campus locations matching the current search text.
+
   List<NUSLocation> get _results {
     if (_query.trim().isEmpty) return const [];
     final q = _query.trim().toLowerCase();
@@ -64,7 +63,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     setState(() => _query = '');
   }
 
-  /// Jump the pin and the camera to a searched location.
+
   void _selectLocation(NUSLocation loc) {
     final target = LatLng(loc.lat, loc.lng);
     _searchCtrl.clear();
@@ -87,12 +86,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
       ),
       body: Column(
         children: [
-          // Search field sits ABOVE the map rather than floating over it.
-          // On web the GoogleMap is an HTML platform view that swallows
-          // pointer events from any Flutter widget drawn on top of it —
-          // pointer_interceptor works around this in Chrome but not in
-          // Safari. Keeping the field outside the Stack sidesteps the
-          // problem entirely, on every browser.
+
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
             child: Column(

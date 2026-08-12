@@ -74,8 +74,10 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     } catch (e) {
-      setState(() =>
-          errorMessage = 'Could not send reset email. Check your email address.');
+      setState(
+        () => errorMessage =
+            'Could not send reset email. Check your email address.',
+      );
     }
   }
 
@@ -86,7 +88,9 @@ class _LoginScreenState extends State<LoginScreen> {
     });
     try {
       await authService.login(
-          emailController.text.trim(), passwordController.text);
+        emailController.text.trim(),
+        passwordController.text,
+      );
 
       // Persist the choice so the splash screen knows whether to keep
       // this session alive on the next cold start.
@@ -97,11 +101,15 @@ class _LoginScreenState extends State<LoginScreen> {
       await user?.reload();
       if (!mounted) return;
       if (user != null && !user.emailVerified) {
-        Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (_) => const VerifyEmailScreen()));
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const VerifyEmailScreen()),
+        );
       } else {
         Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (_) => const HomeScreen()));
+          context,
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
       }
     } catch (e) {
       setState(() {
@@ -131,11 +139,15 @@ class _LoginScreenState extends State<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 40),
-              const Text('Welcome back',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700)),
+              const Text(
+                'Welcome back',
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700),
+              ),
               const SizedBox(height: 8),
-              Text('Sign in to find your next buddy',
-                  style: TextStyle(fontSize: 15, color: Colors.grey.shade500)),
+              Text(
+                'Sign in to find your next buddy',
+                style: TextStyle(fontSize: 15, color: Colors.grey.shade500),
+              ),
               const SizedBox(height: 40),
               TextField(
                 controller: emailController,
@@ -163,7 +175,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       size: 20,
                       color: Colors.grey.shade500,
                     ),
-                    tooltip: _obscurePassword ? 'Show password' : 'Hide password',
+                    tooltip: _obscurePassword
+                        ? 'Show password'
+                        : 'Hide password',
                     onPressed: () =>
                         setState(() => _obscurePassword = !_obscurePassword),
                   ),
@@ -200,7 +214,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 'Keep me signed in',
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
-                                    fontSize: 13, color: Colors.grey.shade600),
+                                  fontSize: 13,
+                                  color: Colors.grey.shade600,
+                                ),
                               ),
                             ),
                           ],
@@ -210,29 +226,42 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   TextButton(
                     onPressed: _forgotPassword,
-                    child: Text('Forgot password?',
-                        style: TextStyle(
-                            fontSize: 13, color: Colors.grey.shade600)),
+                    child: Text(
+                      'Forgot password?',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
                   ),
                 ],
               ),
               if (errorMessage.isNotEmpty)
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFCEBEB),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline,
-                          size: 16, color: Color(0xFFA32D2D)),
+                      const Icon(
+                        Icons.error_outline,
+                        size: 16,
+                        color: Color(0xFFA32D2D),
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: Text(errorMessage,
-                            style: const TextStyle(
-                                color: Color(0xFFA32D2D), fontSize: 13)),
+                        child: Text(
+                          errorMessage,
+                          style: const TextStyle(
+                            color: Color(0xFFA32D2D),
+                            fontSize: 13,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -247,18 +276,25 @@ class _LoginScreenState extends State<LoginScreen> {
                         onPressed: login,
                         style: ElevatedButton.styleFrom(
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10)),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
-                        child: const Text('Sign in',
-                            style: TextStyle(
-                                fontSize: 15, fontWeight: FontWeight.w600)),
+                        child: const Text(
+                          'Sign in',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
               ),
               const SizedBox(height: 16),
               Center(
                 child: TextButton(
-                  onPressed: () => Navigator.push(context,
-                      MaterialPageRoute(builder: (_) => const SignUpScreen())),
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const SignUpScreen()),
+                  ),
                   child: const Text("Don't have an account? Sign up"),
                 ),
               ),

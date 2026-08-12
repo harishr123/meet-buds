@@ -3,9 +3,15 @@ import 'package:meet_buddies/post_model.dart';
 
 PostModel buildPost({double? lat, double? lng}) {
   return PostModel(
-    id: '1', userId: 'u1', username: 'test',
-    text: 'test', imageUrls: [], likes: [], joinedBy: [],
-    activityType: 'general', maxParticipants: 0,
+    id: '1',
+    userId: 'u1',
+    username: 'test',
+    text: 'test',
+    imageUrls: [],
+    likes: [],
+    joinedBy: [],
+    activityType: 'general',
+    maxParticipants: 0,
     timestamp: DateTime.now(),
     locationLat: lat,
     locationLng: lng,

@@ -1,12 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
-// Mirrors the exact validation rules inside _submit() in create_post_screen.dart.
-// Kept here as a local helper so these tests don't require any changes to the
-// widget or any Firebase mocking (CreatePostScreen's state instantiates
-// PostService(), which touches FirebaseFirestore.instance/FirebaseAuth.instance
-// eagerly, so pumping the real widget would need Firebase test doubles).
-//
-// Returns the error message that would be shown, or null if validation passes.
+
 String? validateCreatePost({
   required String text,
   required String location,

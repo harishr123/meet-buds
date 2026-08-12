@@ -33,10 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
 
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: screens,
-      ),
+      body: IndexedStack(index: _currentIndex, children: screens),
       floatingActionButton: _currentIndex == 0
           ? FloatingActionButton(
               heroTag: 'home_fab',

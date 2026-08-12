@@ -62,7 +62,8 @@ class _ProfileScreenState extends State<ProfileScreen>
       builder: (ctx) => AlertDialog(
         title: const Text('Log out?'),
         content: const Text(
-            'You will need to sign in again to post or join activities.'),
+          'You will need to sign in again to post or join activities.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -125,8 +126,10 @@ class _ProfileScreenState extends State<ProfileScreen>
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: Text(username,
-            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+        title: Text(
+          username,
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+        ),
         centerTitle: true,
         actions: _isOwnProfile
             ? [
@@ -139,7 +142,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                           onPressed: () => Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (_) => const ModerationScreen()),
+                              builder: (_) => const ModerationScreen(),
+                            ),
                           ),
                         )
                       : const SizedBox.shrink(),
@@ -181,9 +185,13 @@ class _ProfileScreenState extends State<ProfileScreen>
                         ),
                       ),
                       const SizedBox(height: 12),
-                      Text(username,
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.w700)),
+                      Text(
+                        username,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                       const SizedBox(height: 8),
 
                       // Bio
@@ -204,8 +212,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                             ),
                             const SizedBox(width: 8),
                             IconButton(
-                              icon: const Icon(Icons.check,
-                                  color: Color(0xFF1D9E75)),
+                              icon: const Icon(
+                                Icons.check,
+                                color: Color(0xFF1D9E75),
+                              ),
                               onPressed: _saveBio,
                             ),
                           ],
@@ -222,8 +232,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                                 child: Text(
                                   bio.isEmpty
                                       ? (_isOwnProfile
-                                          ? 'Tap to add a bio...'
-                                          : '')
+                                            ? 'Tap to add a bio...'
+                                            : '')
                                       : bio,
                                   style: TextStyle(
                                     fontSize: 14,
@@ -236,8 +246,11 @@ class _ProfileScreenState extends State<ProfileScreen>
                               ),
                               if (_isOwnProfile) ...[
                                 const SizedBox(width: 6),
-                                Icon(Icons.edit,
-                                    size: 13, color: Colors.grey.shade400),
+                                Icon(
+                                  Icons.edit,
+                                  size: 13,
+                                  color: Colors.grey.shade400,
+                                ),
                               ],
                             ],
                           ),
@@ -271,14 +284,16 @@ class _ProfileScreenState extends State<ProfileScreen>
                           if (snapshot.connectionState ==
                               ConnectionState.waiting) {
                             return const Center(
-                                child: CircularProgressIndicator());
+                              child: CircularProgressIndicator(),
+                            );
                           }
                           final posts = snapshot.data ?? [];
                           if (posts.isEmpty) {
                             return Center(
-                              child: Text('No posts yet',
-                                  style:
-                                      TextStyle(color: Colors.grey.shade400)),
+                              child: Text(
+                                'No posts yet',
+                                style: TextStyle(color: Colors.grey.shade400),
+                              ),
                             );
                           }
                           return ListView.builder(
@@ -294,20 +309,21 @@ class _ProfileScreenState extends State<ProfileScreen>
 
                       // Joined tab
                       StreamBuilder<List<PostModel>>(
-                        stream:
-                            _postService.getJoinedActivities(widget.userId),
+                        stream: _postService.getJoinedActivities(widget.userId),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
                               ConnectionState.waiting) {
                             return const Center(
-                                child: CircularProgressIndicator());
+                              child: CircularProgressIndicator(),
+                            );
                           }
                           final posts = snapshot.data ?? [];
                           if (posts.isEmpty) {
                             return Center(
-                              child: Text('No joined activities yet',
-                                  style:
-                                      TextStyle(color: Colors.grey.shade400)),
+                              child: Text(
+                                'No joined activities yet',
+                                style: TextStyle(color: Colors.grey.shade400),
+                              ),
                             );
                           }
                           return ListView.builder(
