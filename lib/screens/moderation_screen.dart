@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-
 const String _kPostsCollection = 'posts';
 const String _kPostAuthorField = 'userId';
 const String _kPostTitleField = 'username';
@@ -10,7 +9,6 @@ const String _kPostBodyField = 'text';
 
 const String _kUsersCollection = 'users';
 const String _kReportsCollection = 'reports';
-
 
 Future<bool> isCurrentUserModerator() async {
   final uid = FirebaseAuth.instance.currentUser?.uid;
@@ -26,7 +24,6 @@ Future<bool> isCurrentUserModerator() async {
   }
 }
 
-
 class _ReportGroup {
   _ReportGroup(this.postId);
 
@@ -34,7 +31,6 @@ class _ReportGroup {
   final List<QueryDocumentSnapshot<Map<String, dynamic>>> reports = [];
 
   int get count => reports.length;
-
 
   DateTime get latest {
     DateTime newest = DateTime.fromMillisecondsSinceEpoch(0);
@@ -44,7 +40,6 @@ class _ReportGroup {
     }
     return newest;
   }
-
 
   Map<String, int> get reasonTally {
     final tally = <String, int>{};
@@ -102,7 +97,6 @@ class ModerationScreen extends StatelessWidget {
     );
   }
 
-
   List<_ReportGroup> _group(
     List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
   ) {
@@ -153,8 +147,6 @@ class _ReportCardState extends State<_ReportCard> {
                 );
               }
 
-              // The post may already be gone — deleted by its author, or by
-              // another moderator. Show a tombstone rather than throwing.
               final exists = snap.hasData && (snap.data?.exists ?? false);
               final data = exists ? snap.data!.data() : null;
 
@@ -187,14 +179,14 @@ class _ReportCardState extends State<_ReportCard> {
       await action();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Failed: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed: $e')));
       }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
   }
-
 
   Future<void> _dismiss(_ReportGroup group) async {
     final uid = FirebaseAuth.instance.currentUser!.uid;
@@ -254,8 +246,9 @@ class _ReportCardState extends State<_ReportCard> {
 
   void _toast(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 }
 

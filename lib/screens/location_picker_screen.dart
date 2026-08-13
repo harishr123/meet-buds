@@ -2,17 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../models/nus_location.dart';
 
-
 class LocationPickResult {
-  final String label; 
-  final double lat; 
+  final String label;
+  final double lat;
   final double lng;
 
-  LocationPickResult({required this.label, required this.lat, required this.lng});
+  LocationPickResult({
+    required this.label,
+    required this.lat,
+    required this.lng,
+  });
 }
 
 class LocationPickerScreen extends StatefulWidget {
-  
   final LatLng? initialPosition;
 
   const LocationPickerScreen({super.key, this.initialPosition});
@@ -22,7 +24,6 @@ class LocationPickerScreen extends StatefulWidget {
 }
 
 class _LocationPickerScreenState extends State<LocationPickerScreen> {
-  
   static const LatLng _defaultCenter = LatLng(1.2966, 103.7764);
 
   late LatLng _pinPosition;
@@ -43,7 +44,6 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     super.dispose();
   }
 
-
   List<NUSLocation> get _results {
     if (_query.trim().isEmpty) return const [];
     final q = _query.trim().toLowerCase();
@@ -63,7 +63,6 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     setState(() => _query = '');
   }
 
-
   void _selectLocation(NUSLocation loc) {
     final target = LatLng(loc.lat, loc.lng);
     _searchCtrl.clear();
@@ -77,16 +76,15 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final nearest =
-        NUSLocation.nearestTo(_pinPosition.latitude, _pinPosition.longitude);
+    final nearest = NUSLocation.nearestTo(
+      _pinPosition.latitude,
+      _pinPosition.longitude,
+    );
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Drop a pin'),
-      ),
+      appBar: AppBar(title: const Text('Drop a pin')),
       body: Column(
         children: [
-
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
             child: Column(
@@ -102,20 +100,27 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                     decoration: InputDecoration(
                       hintText: 'Search for a place on campus',
                       hintStyle: TextStyle(
-                          fontSize: 14, color: Colors.grey.shade400),
-                      prefixIcon: Icon(Icons.search,
-                          size: 20, color: Colors.grey.shade400),
+                        fontSize: 14,
+                        color: Colors.grey.shade400,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.search,
+                        size: 20,
+                        color: Colors.grey.shade400,
+                      ),
                       suffixIcon: _query.isEmpty
                           ? null
                           : IconButton(
-                              icon: Icon(Icons.clear,
-                                  size: 18, color: Colors.grey.shade400),
+                              icon: Icon(
+                                Icons.clear,
+                                size: 18,
+                                color: Colors.grey.shade400,
+                              ),
                               onPressed: _clearSearch,
                             ),
                       filled: true,
                       fillColor: Colors.white,
-                      contentPadding:
-                          const EdgeInsets.symmetric(vertical: 12),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
@@ -142,30 +147,37 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                     child: _results.isEmpty
                         ? Padding(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 14),
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
                             child: Text(
                               'No campus locations match that. '
                               'You can still tap or drag the pin.',
                               style: TextStyle(
-                                  fontSize: 13, color: Colors.grey.shade500),
+                                fontSize: 13,
+                                color: Colors.grey.shade500,
+                              ),
                             ),
                           )
                         : ListView.separated(
                             shrinkWrap: true,
                             padding: EdgeInsets.zero,
                             itemCount: _results.length,
-                            separatorBuilder: (context, index) => Divider(
-                              height: 1,
-                              color: Colors.grey.shade200,
-                            ),
+                            separatorBuilder: (context, index) =>
+                                Divider(height: 1, color: Colors.grey.shade200),
                             itemBuilder: (context, i) {
                               final loc = _results[i];
                               return ListTile(
                                 dense: true,
-                                leading: Icon(Icons.place_outlined,
-                                    size: 20, color: Colors.grey.shade500),
-                                title: Text(loc.name,
-                                    style: const TextStyle(fontSize: 14)),
+                                leading: Icon(
+                                  Icons.place_outlined,
+                                  size: 20,
+                                  color: Colors.grey.shade500,
+                                ),
+                                title: Text(
+                                  loc.name,
+                                  style: const TextStyle(fontSize: 14),
+                                ),
                                 onTap: () => _selectLocation(loc),
                               );
                             },
@@ -198,7 +210,8 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                   draggable: true,
                   onDragEnd: _updatePin,
                   icon: BitmapDescriptor.defaultMarkerWithHue(
-                      BitmapDescriptor.hueRed),
+                    BitmapDescriptor.hueRed,
+                  ),
                 ),
               },
             ),
@@ -228,7 +241,9 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                         'Nearest: ${nearest.name}',
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w600),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],

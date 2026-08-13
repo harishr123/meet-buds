@@ -16,18 +16,15 @@ Future<void> showReportDialog(
           title: const Text('Report post'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
-            children: [
-              'Inappropriate content',
-              'Spam',
-              'Harassment',
-              'Other',
-            ]
-                .map((r) => RadioListTile<String>(
-                      title: Text(r),
-                      value: r,
-                      groupValue: selected,
-                      onChanged: (v) => setState(() => selected = v!),
-                    ))
+            children: ['Inappropriate content', 'Spam', 'Harassment', 'Other']
+                .map(
+                  (r) => RadioListTile<String>(
+                    title: Text(r),
+                    value: r,
+                    groupValue: selected,
+                    onChanged: (v) => setState(() => selected = v!),
+                  ),
+                )
                 .toList(),
           ),
           actions: [
@@ -50,18 +47,17 @@ Future<void> showReportDialog(
   final uid = FirebaseAuth.instance.currentUser!.uid;
 
   try {
-
     await FirebaseFirestore.instance
         .collection('reports')
         .doc('${postId}_$uid')
         .set({
-      'postId': postId,
-      'reportedUserId': reportedUserId,
-      'reporterId': uid,
-      'reason': reason,
-      'status': 'pending',
-      'timestamp': FieldValue.serverTimestamp(),
-    });
+          'postId': postId,
+          'reportedUserId': reportedUserId,
+          'reporterId': uid,
+          'reason': reason,
+          'status': 'pending',
+          'timestamp': FieldValue.serverTimestamp(),
+        });
 
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -71,9 +67,11 @@ Future<void> showReportDialog(
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(e.code == 'permission-denied'
-            ? 'You have already reported this post.'
-            : 'Could not submit report. Please try again.'),
+        content: Text(
+          e.code == 'permission-denied'
+              ? 'You have already reported this post.'
+              : 'Could not submit report. Please try again.',
+        ),
       ),
     );
   }

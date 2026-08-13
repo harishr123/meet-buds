@@ -7,7 +7,6 @@ class NUSLocation {
 
   const NUSLocation({required this.name, required this.lat, required this.lng});
 
-
   static const List<NUSLocation> all = [
     NUSLocation(name: 'UTown Gym', lat: 1.3045, lng: 103.7725),
     NUSLocation(name: 'UTown Green', lat: 1.3049, lng: 103.7732),
@@ -43,12 +42,21 @@ class NUSLocation {
     return closest;
   }
 
-  static double _haversineMeters(double lat1, double lng1, double lat2, double lng2) {
+  static double _haversineMeters(
+    double lat1,
+    double lng1,
+    double lat2,
+    double lng2,
+  ) {
     const R = 6371000.0; // Earth radius in meters
     final dLat = _deg2rad(lat2 - lat1);
     final dLng = _deg2rad(lng2 - lng1);
-    final a = sin(dLat / 2) * sin(dLat / 2) +
-        cos(_deg2rad(lat1)) * cos(_deg2rad(lat2)) * sin(dLng / 2) * sin(dLng / 2);
+    final a =
+        sin(dLat / 2) * sin(dLat / 2) +
+        cos(_deg2rad(lat1)) *
+            cos(_deg2rad(lat2)) *
+            sin(dLng / 2) *
+            sin(dLng / 2);
     final c = 2 * atan2(sqrt(a), sqrt(1 - a));
     return R * c;
   }

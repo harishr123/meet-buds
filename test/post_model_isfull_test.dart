@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:meet_buddies/post_model.dart';
 
-
 bool isFull(PostModel post) {
   final maxP = post.maxParticipants;
   final joinedCount = post.joinedBy.length;
@@ -38,14 +37,19 @@ void main() {
       expect(isFull(post), isFalse);
     });
 
-    test('returns true when joinedBy.length equals maxParticipants exactly', () {
-      final post = _buildPost(joinedBy: ['a', 'b', 'c'], maxParticipants: 3);
-      expect(isFull(post), isTrue);
-    });
+    test(
+      'returns true when joinedBy.length equals maxParticipants exactly',
+      () {
+        final post = _buildPost(joinedBy: ['a', 'b', 'c'], maxParticipants: 3);
+        expect(isFull(post), isTrue);
+      },
+    );
 
     test('returns true when joinedBy.length exceeds maxParticipants', () {
-
-      final post = _buildPost(joinedBy: ['a', 'b', 'c', 'd'], maxParticipants: 3);
+      final post = _buildPost(
+        joinedBy: ['a', 'b', 'c', 'd'],
+        maxParticipants: 3,
+      );
       expect(isFull(post), isTrue);
     });
 
@@ -54,10 +58,16 @@ void main() {
       expect(isFull(post), isFalse);
     });
 
-    test('maxParticipants of 0 means unlimited: never full even with many joins', () {
-      final post = _buildPost(joinedBy: ['a', 'b', 'c', 'd', 'e'], maxParticipants: 0);
-      expect(isFull(post), isFalse);
-    });
+    test(
+      'maxParticipants of 0 means unlimited: never full even with many joins',
+      () {
+        final post = _buildPost(
+          joinedBy: ['a', 'b', 'c', 'd', 'e'],
+          maxParticipants: 0,
+        );
+        expect(isFull(post), isFalse);
+      },
+    );
 
     test('maxParticipants of 0 with empty joinedBy is also not full', () {
       final post = _buildPost(joinedBy: [], maxParticipants: 0);

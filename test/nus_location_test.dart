@@ -11,8 +11,11 @@ void main() {
     test('every location resolves to itself at its own coordinates', () {
       for (final loc in NUSLocation.all) {
         final result = NUSLocation.nearestTo(loc.lat, loc.lng);
-        expect(result.name, loc.name,
-            reason: '${loc.name} did not resolve to itself');
+        expect(
+          result.name,
+          loc.name,
+          reason: '${loc.name} did not resolve to itself',
+        );
       }
     });
 

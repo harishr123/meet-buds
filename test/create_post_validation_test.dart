@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 
-
 String? validateCreatePost({
   required String text,
   required String location,
